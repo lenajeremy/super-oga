@@ -22,7 +22,7 @@ const CAST_NAMES = {
 };
 for (const id of PEOPLE_IDS) CAST[id] = { name: CAST_NAMES[id], sheet: 'people', idle: `${id}_1`, talk: `${id}_talk` };
 
-// What the floating prompt says when you can press up next to someone.
+// What the floating prompt says when you can press Enter next to someone.
 const PROMPTS = {
   suya: 'BUY SUYA', mamaput: 'CHOP', nurse: 'CLINIC', water: 'BUY WATER', okadaman: 'HIRE OKADA',
   kekeman: 'HIRE KEKE', conductor: 'TALK', agbero: 'TALK', mum: 'TALK', tailor: 'TALK', bride: 'TALK',
@@ -153,7 +153,7 @@ const EFFECTS = {
 function rideScript(ride, price, deal, pitch, haggleLine, hiredLine) {
   return ({ npc }) =>
     npc.ride && npc.ride.paid
-      ? { start: `THE ${ride} NA YOUR OWN TODAY. STAND BESIDE AM, PRESS ↑ TO CLIMB.` }
+      ? { start: `THE ${ride} NA YOUR OWN TODAY. STAND BESIDE AM, PRESS ENTER TO CLIMB.` }
       : {
           start: {
             text: pitch,

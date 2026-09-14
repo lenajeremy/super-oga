@@ -354,10 +354,9 @@ class Player extends Entity {
       }
     }
 
-    // Up is jump, except when there is somebody in front of you - then it talks, buys,
-    // haggles or climbs aboard. Checked before the jump below so it wins, and the jump
-    // buffer is cleared so the press does not leak into a hop on the way out.
-    if (Input.pressed.up && this.onGround && !this.mountCooldown) {
+    // Enter talks to whoever is in front of you: buys, haggles, or climbs aboard. Up is
+    // purely a jump now, so it never swallows one.
+    if (Input.pressed.talk && this.onGround && !this.mountCooldown) {
       const target = world.interactable(this);
       if (target) {
         this.jumpBuffer = 0;

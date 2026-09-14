@@ -73,7 +73,7 @@ const LEVELS = [
     ambience: 'street',
     time: 380,
     story: 'TUNDE MOTOR DON KNOCK FOR OSHODI. IYA RONKE DEY WAIT FOR AM UNDER THE FAMILY CANOPY.',
-    tip: 'PRESS ↑ TO TALK: BUY SUYA, HIRE OKADA, SETTLE AGBERO. ↓ TO COMOT FROM RIDE.',
+    tip: 'PRESS ENTER TO TALK: BUY SUYA, HIRE OKADA, SETTLE AGBERO. ↓ TO COMOT FROM RIDE.',
     host: 'mum',
     goal: 'canopy_family',
     reward: 200,

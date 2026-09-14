@@ -230,9 +230,8 @@ const Game = {
       if (this.dialog.closed) this.dialog = null;
       return;
     }
-    // Enter both skips the stage intro and pauses, so ignore it for a moment after the
-    // stage starts - otherwise tapping through the intro drops you straight into PAUSE.
-    if (this.stateTime > 12 && (Input.pressed.pause || Input.pressed.start)) this.togglePause();
+    // Enter talks, so pausing lives on Escape and P alone.
+    if (Input.pressed.pause) this.togglePause();
     if (this.paused) return;
     const world = this.world;
     world.update();
@@ -495,7 +494,7 @@ const Game = {
 
     const touch = document.body.classList.contains('touch-on');
     if (this.blink()) drawText(ctx, touch ? 'TAP MAKE WE START!' : 'OYA, PRESS ENTER!', VIEW_W / 2, subY + 24, { align: 'center' });
-    drawText(ctx, touch ? '◀ ▶ WAKA  JUMP  RUN  ENTER  COMOT' : '← → WAKA  Z JUMP  X RUN/THROW  ↑ TALK  ↓ COMOT', VIEW_W / 2, subY + 40, { align: 'center', color: '#a8a2b4' });
+    drawText(ctx, touch ? '◀ ▶ WAKA  JUMP  RUN  ENTER  COMOT' : '← → WAKA  Z JUMP  X RUN/PUNCH  ENTER TALK  ↓ COMOT', VIEW_W / 2, subY + 40, { align: 'center', color: '#a8a2b4' });
     drawText(ctx, `HI ${this.hiscore}`, VIEW_W - 6, 6, { align: 'right', color: '#ffcd3a' });
     if (!touch) drawText(ctx, 'C: CREDITS   M: GBEDU', 6, 6, { color: '#a8a2b4' });
 
@@ -604,7 +603,7 @@ const Game = {
     this.shade(ctx, 0, 0, VIEW_W, VIEW_H, 0.6);
     drawText(ctx, 'PAUSE', VIEW_W / 2, 74, { align: 'center', scale: 3, color: '#ffcd3a' });
     drawText(ctx, 'ABEG REST SMALL...', VIEW_W / 2, 108, { align: 'center' });
-    drawText(ctx, 'PRESS ENTER TO CONTINUE', VIEW_W / 2, 132, { align: 'center', color: '#a8a2b4' });
+    drawText(ctx, 'PRESS ESC TO CONTINUE', VIEW_W / 2, 132, { align: 'center', color: '#a8a2b4' });
   },
 
   drawGameOver(ctx) {

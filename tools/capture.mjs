@@ -214,7 +214,7 @@ for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
   const target = p.state === 'play' && p.onGround ? w.interactable(p) : null;
   if (target && (target._greeted || 0) < 2) {
     target._greeted = (target._greeted || 0) + 1;
-    press('ArrowUp'); tick(1); press(); tick(1);
+    press('Enter'); tick(1); press(); tick(1);   // Enter talks now, not up
     continue;
   }
   const keys = ['ArrowRight', 'KeyX'];

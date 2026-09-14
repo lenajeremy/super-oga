@@ -2,17 +2,17 @@
 'use strict';
 
 const Input = {
-  actions: ['left', 'right', 'up', 'down', 'jump', 'run', 'start', 'pause', 'mute', 'credits', 'cheat'],
+  actions: ['left', 'right', 'up', 'down', 'jump', 'run', 'start', 'talk', 'pause', 'mute', 'credits', 'cheat'],
   bindings: {
     ArrowLeft: ['left'], KeyA: ['left'],
     ArrowRight: ['right'], KeyD: ['right'],
-    // Up is both jump and talk: the player code checks for somebody to talk to first,
-    // so the game can be played one-handed on the arrow keys alone.
     ArrowUp: ['up', 'jump'], KeyW: ['up', 'jump'],
     ArrowDown: ['down'], KeyS: ['down'],
     Space: ['jump'], KeyZ: ['jump'], KeyK: ['jump'],
     KeyX: ['run'], KeyJ: ['run'], ShiftLeft: ['run'], ShiftRight: ['run'],
-    Enter: ['start'], NumpadEnter: ['start'],
+    // Enter talks to whoever is in front of you, and still confirms on menus and in
+    // conversation. It sits beside the arrow keys, so one-handed play survives.
+    Enter: ['start', 'talk'], NumpadEnter: ['start', 'talk'],
     Escape: ['pause'], KeyP: ['pause'],
     KeyM: ['mute'],
     KeyC: ['credits'],

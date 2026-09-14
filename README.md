@@ -36,14 +36,15 @@ from `file://`).
 | **← →** | waka (walk) |
 | **Z** / **Space** | jump |
 | **X** | run (held); tapped it punches, or throws a pure-water sachet |
-| **↑** | talk to somebody, buy, hire a ride |
+| **Enter** | talk to somebody: buy, haggle, hire a ride, climb aboard |
+| **↑** | jump (and climb scaffolding) |
 | **↓** | crouch, or comot from a ride |
-| **Enter** | start / continue · **Esc** pause · **M** gbedu on-off · **C** credits |
+| **Esc** / **P** | pause · **M** gbedu on-off · **C** credits |
 | **I** | cheat mode on-off - nothing can kill Oga |
 
-Up does double duty: it jumps, unless somebody is standing in front of you, in which case
-it talks, buys, haggles or climbs aboard. Conversations are driven with up and down to pick
-an option and right to confirm, so the whole game can be played one-handed on the arrows.
+Enter talks to whoever is in front of you - buying, haggling, hiring a ride, climbing
+aboard - and it sits beside the arrow keys, so the game is still playable with one hand.
+Conversations are driven with up and down to pick an option and right to confirm.
 
 Touch controls and gamepads work as well; the ENTER / COMOT buttons appear only when
 there is something to enter or comot from.

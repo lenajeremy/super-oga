@@ -478,7 +478,7 @@ class World {
     const target = this.player.state === 'play' && !this.game.dialog && this.interactable(this.player);
     if (target) {
       const bob = Math.round(Math.sin(this.frame * 0.15));
-      drawText(ctx, `↑ ${target.prompt}`, target.cx - camX, target.y - 12 + bob, { align: 'center', color: '#ffcd3a', outline: true });
+      drawText(ctx, `ENTER: ${target.prompt}`, target.cx - camX, target.y - 12 + bob, { align: 'center', color: '#ffcd3a', outline: true });
     }
     ctx.restore();
   }

@@ -198,7 +198,7 @@ for (let frame = 0; frame < 90000 && Game.state !== 'victory'; frame++) {
   if (target && (target._greeted || 0) < 2) {
     target._greeted = (target._greeted || 0) + 1;
     stats.talked++;
-    press('ArrowUp');
+    press('Enter');   // Enter talks now, not up
     tick(1);
     press();
     tick(1);
@@ -307,8 +307,9 @@ console.log(`difficulty signal: the bot would have died ${stats.deaths} time(s) 
 if (!stats.talked) fail('never talked to anybody - the interact prompt may be broken');
 if (!stats.bought) fail('never bought anything - shop dialogue may be broken');
 if (!stats.mounted) fail('never hired a ride - okada/keke hire may be broken');
-// ---------------------------------------------------------------- one-handed controls
-// Up has to do both jobs: jump on open ground, talk when somebody is in front of you.
+// ---------------------------------------------------------------- controls
+// Up is purely a jump; Enter talks to whoever is in front of you. Enter sits beside the
+// arrow keys, so the whole game is still playable with one hand.
 {
   Game.setState('title');
   tick(30);
@@ -319,6 +320,7 @@ if (!stats.mounted) fail('never hired a ride - okada/keke hire may be broken');
   const w = Game.world;
   const p = w.player;
   const upOnce = () => { press('ArrowUp'); tick(1); press(); tick(1); };
+  const talkOnce = () => { press('Enter'); tick(1); press(); tick(1); };
 
   // 1. open ground -> up jumps
   const npc = w.entities.find((e) => e instanceof scope.api.Npc);
@@ -330,7 +332,7 @@ if (!stats.mounted) fail('never hired a ride - okada/keke hire may be broken');
   upOnce();
   tick(6);
   if (!(p.y < restingY - 8)) fail(`up did not jump on open ground (y ${Math.round(restingY)} -> ${Math.round(p.y)})`);
-  else console.log('one-handed: up jumps on open ground');
+  else console.log('controls: up jumps on open ground');
 
   // 2. beside somebody -> up talks, and does not jump
   if (!npc) {
@@ -342,11 +344,21 @@ if (!stats.mounted) fail('never hired a ride - okada/keke hire may be broken');
     tick(2);
     const beforeY = p.y;
     if (!w.interactable(p)) fail('standing on a person but nothing is interactable');
+
+    // Up beside a person must still jump, not talk.
     upOnce();
-    if (!Game.dialog) fail('up beside a person did not start a conversation');
-    else console.log(`one-handed: up talks to ${Game.dialog.speaker.name} instead of jumping`);
-    tick(4);
-    if (p.y < beforeY - 2) fail(`up beside a person jumped as well (y ${Math.round(beforeY)} -> ${Math.round(p.y)})`);
+    tick(6);
+    if (Game.dialog) fail('up beside a person opened a conversation; that is Enter now');
+    if (!(p.y < beforeY - 8)) fail('up beside a person did not jump');
+    else console.log('controls: up still jumps even beside somebody');
+    while (!p.onGround) tick(1);
+    p.x = npc.cx - p.w / 2;
+    p.y = npc.bottom - p.h;
+    tick(2);
+
+    talkOnce();
+    if (!Game.dialog) fail('Enter beside a person did not start a conversation');
+    else console.log(`controls: Enter talks to ${Game.dialog.speaker.name}`);
 
     // 3. the conversation itself is driveable on arrows alone
     let guard = 0;
@@ -357,7 +369,7 @@ if (!stats.mounted) fail('never hired a ride - okada/keke hire may be broken');
       if (Game.dialog.selected === first) fail('down does not move between dialogue choices');
       press('ArrowUp'); tick(1); press(); tick(1);
       if (Game.dialog.selected !== first) fail('up does not move back between dialogue choices');
-      else console.log('one-handed: up and down pick options, right confirms');
+      else console.log('controls: up and down pick options, right confirms');
     }
     guard = 0;
     while (Game.dialog && guard++ < 400) { press('ArrowRight'); tick(1); press(); tick(1); }
