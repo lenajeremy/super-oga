@@ -180,12 +180,19 @@ class World {
     const left = Math.floor(e.x / TILE);
     const right = Math.floor((e.x + e.w - 1) / TILE);
     if (dy > 0) {
-      const ty = Math.floor((e.y + e.h - 1) / TILE);
-      for (let tx = left; tx <= right; tx++) {
-        const ch = this.tileAt(tx, ty);
-        if (SOLID.has(ch) || (ch === '=' && prevBottom <= ty * TILE && !e.dropping)) {
-          e.y = ty * TILE - e.h;
-          return 1;
+      // The tile the feet are in, and whether they are actually inside it rather than
+      // resting exactly on its top edge. Measuring from (bottom - 1) instead used to point
+      // at the tile ABOVE once gravity nudged the feet a fraction of a pixel in - so a
+      // plank stopped being seen the frame after you landed on it, vy was never cleared,
+      // and you sank straight through the thing you were standing on.
+      const ty = Math.floor((e.y + e.h) / TILE);
+      if (e.y + e.h > ty * TILE) {
+        for (let tx = left; tx <= right; tx++) {
+          const ch = this.tileAt(tx, ty);
+          if (SOLID.has(ch) || (ch === '=' && prevBottom <= ty * TILE && !e.dropping)) {
+            e.y = ty * TILE - e.h;
+            return 1;
+          }
         }
       }
       return 0;
