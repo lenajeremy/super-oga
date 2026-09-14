@@ -4,8 +4,8 @@
 
 const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P', 'u']);
 // Slow enough that a 480px backdrop covers the widest level without wrapping:
-// 400 (view) + 3696 (camera travel) * 0.02 = 474px used of 480.
-const BACKDROP_PARALLAX = 0.02;
+// 400 (view) + 4976 (camera travel on a 336-tile stage) * 0.015 = 475px used of 480.
+const BACKDROP_PARALLAX = 0.015;
 const CRATES = new Set(['?', 'M', 'U', 'S', 'L', 'h']);
 
 // Stalls that come with a seller: [sheet, sprite, x offset where the seller stands].
@@ -58,10 +58,12 @@ class World {
         else if (ch === 'g') this.add(new Goat(this, px, py));
         else if (ch === 'm') this.add(new Mosquito(this, px, py));
         else if (ch === 'a') this.add(new Agbero(this, px, py));
-        else if (ch === 'k') this.triggers.push({ x: px, y: py, kind: 'okada', fired: false });
+        else if (ch === 'k') this.triggers.push({ x: px, y: py, kind: 'okada', dir: -1, fired: false });
+        else if (ch === 'K') this.triggers.push({ x: px, y: py, kind: 'okada', dir: 1, fired: false });
         else if (ch === 'N') this.triggers.push({ x: px, y: py, kind: 'nepa', fired: false });
         else if (ch === '_') this.add(new Platform(this, px, py, 'canoe'));
         else if (ch === '|') this.add(new Platform(this, px, py, 'lift'));
+        else if (ch === 'f') this.add(new Platform(this, px, py, 'raft'));
       }
     }
 
@@ -79,7 +81,7 @@ class World {
     }
     for (const [tx, kind] of this.def.npcs || []) this.spawnPerson(tx, kind);
     if (this.checkpoint) this.add(new Npc(this, this.checkpoint.x + 30, this.checkpoint.tileY + TILE, 'conductor'));
-    if (this.goal && this.def.host) this.add(new Npc(this, this.goal.x + 72, this.goal.bottom, this.def.host));
+    if (this.goal && this.def.host) this.add(new Npc(this, this.goal.x + this.goal.w * 0.7, this.goal.bottom, this.def.host));
 
     this.buildings = [];
     let bx = 12;
@@ -361,7 +363,7 @@ class World {
         if (trigger.fired || this.camera.x + VIEW_W < trigger.x) continue;
         trigger.fired = true;
         if (trigger.kind === 'nepa') this.startBlackout();
-        else this.add(new OkadaWarning(this, trigger.y));
+        else this.add(new OkadaWarning(this, trigger.y, trigger.dir));
       }
       this.updateBlackout();
       for (const e of this.entities) if (e instanceof Platform) e.update();

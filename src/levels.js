@@ -11,9 +11,10 @@
  *   S  crate: coral beads (Odogwu mode)          L  crate: puff-puff (extra life)
  *   h  hidden puff-puff crate
  *   r  gutter rat        g  goat (ewure)        m  mosquito         a  agbero
- *   k  okada trigger     N  NEPA takes the light  _  canoe platform   |  lift platform
+ *   k  okada from right  K  okada from left     N  NEPA takes the light
+ *   _  canoe platform    |  lift platform        f  raft (sinks while you stand on it)
  *   @  start             C  bus-stop checkpoint (Danladi the conductor waits there)
- *   F  Owambe (goal; the level's `host` waits inside)
+ *   F  goal - the building named by the level's `goal`, with its `host` waiting there
  *
  * `npcs` puts people by column: suya, mamaput, nurse (clinic), water, okadaman, kekeman.
  * Ride owners come with their okada or keke parked beside them.
@@ -58,10 +59,11 @@ const LEVELS = [
     photo: 'bg_oshodi',
     song: 'eko',
     ambience: 'street',
-    time: 320,
+    time: 380,
     story: 'TUNDE MOTOR DON KNOCK FOR OSHODI. IYA RONKE DEY WAIT FOR AM UNDER THE FAMILY CANOPY.',
     tip: 'PRESS ↑ TO TALK: BUY SUYA, HIRE OKADA, SETTLE AGBERO. ↓ TO COMOT FROM RIDE.',
     host: 'mum',
+    goal: 'canopy_family',
     reward: 200,
     buildings: ['house_notforsale', 'mamaput', 'apartments', 'pos'],
     decor: [
@@ -73,7 +75,7 @@ const LEVELS = [
     map: joinChunks(
       chunk(40, { put: [[11, 2, '@'], [9, 6, 'ooo'], [8, 15, '?'], [8, 20, 'BUB?B'], [4, 22, '?'], [11, 26, 'r'], [11, 37, 'r']] }),
       chunk(40, {
-        put: [...pillar(5, 10), ...pillar(14, 9), ...pillar(26, 8), [5, 25, 'oooo'], [9, 17, 'ooo'], [11, 2, 'N'], [11, 10, 'r'], [11, 20, 'r'], [11, 22, 'r'], [11, 34, 'a']],
+        put: [...pillar(5, 10), ...pillar(14, 9), ...pillar(26, 8), [5, 25, 'oooo'], [9, 17, 'ooo'], [11, 10, 'r'], [11, 20, 'r'], [11, 22, 'r'], [11, 34, 'a']],
       }),
       chunk(40, {
         gaps: [[4, 5], [29, 30]],
@@ -81,7 +83,15 @@ const LEVELS = [
       }),
       chunk(40, {
         gaps: [[6, 8], [33, 34]],
-        put: [[8, 9, '====='], [6, 10, 'ooo'], [8, 20, '?U?'], [4, 21, 'h'], [9, 36, 'oo'], [11, 14, 'r'], [11, 22, 'g'], [11, 25, 'r']],
+        put: [[8, 9, '====='], [6, 10, 'ooo'], [8, 20, '?U?'], [4, 21, 'h'], [9, 36, 'oo'], [11, 14, 'r'], [11, 28, 'r']],
+      }),
+      chunk(40, {
+        gaps: [[10, 12], [26, 28]],
+        put: [...pillar(4, 9), [8, 16, 'B?B'], [6, 17, 'ooo'], [9, 21, '====='], [11, 20, 'r'], [11, 34, 'a']],
+      }),
+      chunk(40, {
+        gaps: [[18, 21]],
+        put: [[8, 6, 'BB?BB'], [5, 8, 'M'], [9, 26, 'oooo'], [11, 12, 'r'], [11, 30, 'r'], [11, 36, 'a']],
       }),
       chunk(56, {
         gaps: [[11, 13]],
@@ -96,10 +106,11 @@ const LEVELS = [
     photo: 'bg_market',
     song: 'balogun',
     ambience: 'market',
-    time: 320,
+    time: 380,
     story: 'THE ASO-EBI DEY WITH TAILOR KUNLE FOR BALOGUN. BALOGUN MARKET NO DEY SMALL O!',
     tip: 'EWURE DEY CHARGE LIKE DANFO WEY NO GET BRAKE. KEKE FIT CLEAR DEM FOR ROAD!',
     host: 'tailor',
+    goal: 'tailor_shop',
     reward: 200,
     buildings: ['stall', 'mamaput', 'apartments', 'pos', 'stall'],
     decor: [
@@ -115,11 +126,18 @@ const LEVELS = [
         put: [[10, 6, '======'], [8, 13, '======='], [6, 15, 'ooo'], [10, 20, '======'], [8, 32, 'B?BMB'], [11, 8, 'a'], [9, 22, 'm'], [11, 34, 'r']],
       }),
       chunk(40, {
-        put: [[8, 4, 'BBBBBBBBB'], [5, 10, 'h'], ...pillar(19, 8), [8, 27, 'oooo'], [10, 30, 'm'], [11, 2, 'N'], [11, 14, 'g'], [11, 25, 'a'], [11, 33, 'C'], [11, 39, 'g']],
+        put: [[8, 4, 'BBBBBBBBB'], [5, 10, 'h'], ...pillar(19, 8), [8, 27, 'oooo'], [10, 30, 'm'], [11, 14, 'g'], [11, 25, 'a'], [11, 33, 'C'], [11, 39, 'g']],
       }),
       chunk(40, {
         gaps: [[8, 18]],
         put: [[10, 9, '======'], [10, 15, '====='], [8, 20, '======'], [6, 21, 'ooo'], [8, 31, 'S'], [9, 34, 'ooo'], [11, 24, 'r'], [8, 14, 'm']],
+      }),
+      chunk(40, {
+        gaps: [[12, 16]],
+        put: [[10, 7, '======'], [9, 19, '========'], [7, 23, 'ooo'], [11, 4, 'g'], [9, 18, 'm'], [11, 32, 'a']],
+      }),
+      chunk(40, {
+        put: [[8, 10, 'B?BMB'], [9, 24, 'ooo'], [11, 6, 'g'], [10, 20, 'm'], [11, 30, 'r'], [11, 36, 'g']],
       }),
       chunk(56, {
         put: [[8, 14, '?M?'], [11, 4, 'a'], [11, 12, 'g'], [9, 22, 'm'], [9, 26, 'ooo'], ...stairs(31, [1, 2, 3, 4, 5, 5]), [3, 33, 'ooo'], [11, 44, 'F']],
@@ -133,10 +151,11 @@ const LEVELS = [
     photo: 'bg_lagoon',
     song: 'lagoon',
     ambience: 'bridge',
-    time: 340,
+    time: 400,
     story: 'ASO-EBI DEY HAND. NA ONLY THIRD MAINLAND BRIDGE REMAIN BEFORE THE ISLAND.',
     tip: 'OKADA NO DEY BRAKE FOR ANYBODY. WHEN YOU SEE ! SIGN, JUMP SHARP SHARP!',
     host: 'fashe',
+    goal: 'danfo',
     reward: 0,
     buildings: [],
     decor: [
@@ -153,9 +172,14 @@ const LEVELS = [
         // hop is not a drowning, and the mosquito stays away from the water's edge.
         put: [...pillar(16, 10, 13), [12, 10, '_'], [12, 19, '_'], [7, 15, 'ooooo'], [9, 3, 'm']],
       }),
-      chunk(40, { gaps: [[8, 25]], water: true, put: [[12, 10, '|'], [12, 18, '|'], [4, 11, 'oo'], [4, 19, 'oo'], [11, 30, 'k']] }),
       chunk(40, {
-        put: [[11, 2, 'C'], [8, 5, 'B?B?B'], [9, 10, 'ooo'], [5, 26, 'M'], [8, 24, 'BBBBB'], [10, 14, 'm'], [10, 30, 'm'], [11, 18, 'N'], [11, 21, 'a'], [11, 33, 'k']],
+        gaps: [[8, 25]], water: true,
+        // A bridge pillar breaks the crossing in two, so it is a pair of lift hops rather
+        // than one eighteen-tile leap of faith.
+        put: [...pillar(15, 9, 13), [12, 10, '|'], [12, 20, '|'], [4, 11, 'oo'], [4, 21, 'oo'], [11, 30, 'k']],
+      }),
+      chunk(40, {
+        put: [[11, 2, 'C'], [8, 5, 'B?B?B'], [9, 10, 'ooo'], [5, 26, 'M'], [8, 24, 'BBBBB'], [10, 14, 'm'], [10, 24, 'm'], [11, 21, 'a'], [11, 33, 'k']],
       }),
       chunk(40, {
         // Two shorter canoe rides either side of the pillar island: the nine- and
@@ -164,6 +188,8 @@ const LEVELS = [
         water: true,
         put: [...pillar(15, 9, 13), [12, 6, '_'], [12, 18, '_'], [6, 22, 'ooo'], [11, 3, 'r'], [11, 32, 'r']],
       }),
+      chunk(40, { gaps: [[8, 20]], water: true, put: [[12, 9, '_'], [7, 12, 'ooooo'], [10, 24, 'm'], [11, 28, 'k']] }),
+      chunk(40, { put: [[8, 8, 'B?B?B'], [9, 16, 'ooo'], [11, 4, 'a'], [11, 22, 'k'], [11, 34, 'r']] }),
       chunk(56, {
         put: [...stairs(7, [1, 2, 3, 4, 5, 5, 5]), [3, 11, 'oo'], [10, 3, 'm'], [11, 20, 'k'], [11, 28, 'a'], [11, 42, 'F']],
       }),
@@ -176,10 +202,11 @@ const LEVELS = [
     photo: 'bg_ojuelegba',
     song: 'ojuelegba',
     ambience: 'night',
-    time: 340,
+    time: 400,
     story: 'ONE CHANCE DON SCATTER EVERYTHING. TUNDE WAKE FOR OJUELEGBA. NIGHT DON FALL, ASO-EBI DON GO.',
     tip: 'NIGHT NO GET EYE. FIND BABA RISI FOR THE JUNCTION - HIM SABI EVERY FACE FOR THIS ROAD.',
     host: 'risi',
+    goal: 'vulcanizer',
     reward: 300,
     buildings: ['apartments', 'house_notforsale', 'pos', 'mamaput'],
     decor: [
@@ -201,6 +228,13 @@ const LEVELS = [
         gaps: [[8, 10], [24, 27]],
         put: [[8, 11, '======='], [6, 13, 'ooo'], [8, 20, '?U?'], [4, 21, 'h'], [9, 29, '======='], [10, 34, 'm'], [11, 6, 'r']],
       }),
+      chunk(40, {
+        gaps: [[14, 17]],
+        put: [...pillar(6, 8), [9, 22, '====='], [7, 23, 'ooo'], [11, 12, 'r'], [11, 30, 'a']],
+      }),
+      chunk(40, {
+        put: [[8, 8, 'BB?BB'], [5, 10, 'M'], [9, 24, 'ooo'], [10, 18, 'm'], [11, 4, 'r'], [11, 32, 'a']],
+      }),
       chunk(56, {
         gaps: [[16, 18]],
         put: [...stairs(4, [1, 2, 3, 4, 5, 5]), [3, 8, 'ooo'], [11, 24, 'a'], [11, 30, 'r'], [8, 34, 'S'], [11, 42, 'F']],
@@ -214,10 +248,11 @@ const LEVELS = [
     photo: 'bg_makoko',
     song: 'makoko',
     ambience: 'bridge',
-    time: 360,
+    time: 420,
     story: 'BABA RISI SAY FASHE BOYS DEY SELL THE CLOTH FOR MAKOKO, FOR TOP WATER. NA CANOE GO CARRY YOU.',
-    tip: 'THE BOARD DEY NARROW AND THE WATER DEY BELOW. WAIT FOR CANOE, NO RUSH.',
+    tip: 'THE RAFT DEY SINK WHEN YOU STAND FOR AM. NO WAIT LONG - JUMP BEFORE E GO UNDER!',
     host: 'ebun',
+    goal: 'jetty',
     reward: 200,
     buildings: [],
     decor: [
@@ -235,12 +270,20 @@ const LEVELS = [
       chunk(40, {
         gaps: [[10, 16]],
         water: true,
-        put: [[12, 11, '_'], [8, 22, 'B?B'], [9, 30, 'ooo'], [11, 2, 'N'], [10, 26, 'm'], [11, 35, 'a']],
+        put: [[12, 11, 'f'], [8, 22, 'B?B'], [9, 30, 'ooo'], [10, 26, 'm'], [11, 35, 'a']],
       }),
       chunk(40, {
         gaps: [[6, 12], [18, 24], [30, 34]],
         water: true,
-        put: [[12, 7, '_'], [12, 19, '_'], [12, 31, '_'], [6, 8, 'oo'], [6, 20, 'oo'], [10, 27, 'm'], [11, 15, 'C']],
+        put: [[12, 7, 'f'], [12, 19, '_'], [12, 31, 'f'], [6, 8, 'oo'], [6, 20, 'oo'], [10, 27, 'm'], [11, 15, 'C']],
+      }),
+      chunk(40, {
+        gaps: [[8, 14], [20, 27]], water: true,
+        put: [[12, 9, 'f'], [12, 21, 'f'], [7, 10, 'ooo'], [7, 22, 'ooo'], [10, 17, 'm']],
+      }),
+      chunk(40, {
+        gaps: [[12, 18]], water: true,
+        put: [[12, 13, '_'], [8, 26, 'B?B'], [9, 30, 'ooo'], [10, 8, 'm'], [11, 34, 'r']],
       }),
       chunk(56, {
         gaps: [[8, 14]],
@@ -256,10 +299,11 @@ const LEVELS = [
     photo: 'bg_island',
     song: 'island',
     ambience: 'street',
-    time: 380,
+    time: 440,
     story: 'ASO-EBI DON RETURN. NA ONLY ISALE EKO GO-SLOW REMAIN. DEM NEVER CUT CAKE - RUN!',
-    tip: 'GO-SLOW MEAN OKADA EVERYWHERE. THE OWAMBE DEY THE END OF THIS ROAD.',
+    tip: 'GO-SLOW MEAN OKADA FROM BOTH SIDE. WATCH THE ! SIGN - LEFT AND RIGHT!',
     host: 'bride',
+    goal: 'owambe',
     reward: 0,
     buildings: ['house_notforsale', 'apartments', 'mamaput', 'pos', 'stall'],
     decor: [
@@ -279,10 +323,17 @@ const LEVELS = [
       }),
       chunk(40, {
         gaps: [[10, 13], [26, 28]],
-        put: [[8, 16, '?S?'], [4, 17, 'h'], [9, 32, 'ooo'], [11, 6, 'g'], [11, 22, 'a'], [11, 36, 'k']],
+        put: [[8, 16, '?S?'], [4, 17, 'h'], [9, 32, 'ooo'], [11, 6, 'g'], [11, 22, 'a'], [11, 36, 'K']],
       }),
       chunk(40, {
-        put: [[8, 8, 'BBBBB'], [5, 10, 'M'], [9, 20, 'ooo'], [11, 4, 'r'], [10, 16, 'm'], [11, 28, 'a'], [11, 34, 'k']],
+        put: [[8, 8, 'BBBBB'], [5, 10, 'M'], [9, 20, 'ooo'], [11, 4, 'r'], [10, 16, 'm'], [11, 28, 'K'], [11, 34, 'k']],
+      }),
+      chunk(40, {
+        gaps: [[20, 22]],
+        put: [[8, 10, '======'], [6, 12, 'ooo'], [11, 4, 'K'], [11, 28, 'g'], [11, 36, 'k']],
+      }),
+      chunk(40, {
+        put: [[8, 6, 'B?BMB'], [9, 22, 'oooo'], [11, 14, 'a'], [10, 26, 'm'], [11, 32, 'K']],
       }),
       chunk(56, {
         gaps: [[12, 14]],

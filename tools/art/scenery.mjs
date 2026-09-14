@@ -14,7 +14,7 @@ function canopy(p, cx, top, rows, colors) {
   return p;
 }
 
-function owambe() {
+function canopyWith(banner) {
   const p = new Pix(104, 84);
   for (const x of [8, 94]) p.rect(x, 26, 2, 58, 'N');
   for (const x of [13, 79]) {
@@ -29,7 +29,7 @@ function owambe() {
   p.rect(24, 32, 56, 13, 'P');
   for (const [x, y, c] of [[4, 12, 'R'], [10, 6, 'Y'], [94, 6, 'G'], [100, 12, 'B']]) p.ellipse(x, y, 3, 3.5, c);
   p.outline('K');
-  p.text(52 - Math.floor(measure('OWAMBE', 'big') / 2), 35, 'OWAMBE', 'Y', 'big');
+  p.text(52 - Math.floor(measure(banner, 'big') / 2), 35, banner, 'Y', 'big');
   for (const [x, y] of [[4, 12], [10, 6], [94, 6], [100, 12]]) p.line(x, y + 5, x + (x < 50 ? 3 : -3), y + 14, 'w');
   for (const x of [30, 44, 58, 72]) p.set(x, 29, 'Y').set(x, 30, 'y');
   return p;
@@ -101,9 +101,59 @@ function marketStall() {
   return p.outline('K');
 }
 
+// Where each stage actually ends. Only the last one is the party; the others were all
+// showing an OWAMBE canopy, which told you that you had arrived when you had not.
+function tailorShop() {
+  const p = new Pix(88, 80);
+  p.rect(6, 0, 76, 12, 'P').rect(0, 12, 88, 6, 'N');
+  p.rect(4, 18, 80, 62, 'W').rect(4, 18, 80, 2, 'w');
+  p.rect(10, 28, 26, 24, 'c').rect(52, 28, 26, 24, 'c');
+  p.rect(36, 52, 16, 28, 'D').rect(36, 52, 16, 2, 'd');
+  // bolts of cloth stacked in the window, and a sewing machine
+  for (const [i, col] of ['R', 'G', 'Y', 'B', 'O'].entries()) p.rect(12 + i * 5, 34, 4, 16, col);
+  p.rect(56, 40, 18, 4, 'k').rect(60, 34, 4, 6, 'k').rect(58, 44, 14, 8, 'D');
+  p.outline('K');
+  for (let x = 1; x < 88; x += 4) p.rect(x, 13, 2, 5, 'n');
+  p.text(44 - Math.floor(measure('TAILOR', 'big') / 2), 2, 'TAILOR', 'Y', 'big');
+  return p;
+}
+
+function vulcanizerShed() {
+  const p = new Pix(84, 76);
+  p.rect(2, 10, 80, 8, 'z').rect(0, 8, 84, 3, 'k');
+  p.rect(6, 18, 72, 58, 'e').rect(6, 18, 72, 2, 'E');
+  p.rect(30, 46, 20, 30, 'k');
+  // tyres stacked outside, and the compressor
+  for (const [x, y] of [[12, 52], [12, 64], [62, 52], [62, 64], [70, 58]]) {
+    p.disc(x + 6, y + 5, 6, 'k').disc(x + 6, y + 5, 2.5, 'n');
+  }
+  p.rect(54, 30, 16, 12, 'R').rect(56, 32, 6, 5, 'k');
+  p.outline('K');
+  p.text(42 - Math.floor(measure('VULCANIZER') / 2), 12, 'VULCANIZER', 'Y');
+  return p;
+}
+
+function jetty() {
+  const p = new Pix(96, 60);
+  // a plank landing on stilts, with a canoe tied alongside
+  p.rect(0, 20, 96, 8, 'D').rect(0, 20, 96, 2, 'E').rect(0, 26, 96, 2, 'd');
+  for (const x of [8, 30, 54, 80]) p.rect(x, 28, 4, 32, 'd').rect(x, 28, 1, 32, 'D');
+  p.rect(20, 4, 4, 16, 'D').rect(16, 0, 12, 5, 'W').rect(16, 0, 12, 2, 'w');
+  p.rect(60, 8, 4, 12, 'D');
+  const rows = [[34, 92], [34, 92], [37, 89], [40, 86]];
+  rows.forEach(([a, b], i) => p.rect(a, 40 + i, b - a + 1, 1, i ? 'D' : 'E'));
+  p.outline('K');
+  for (let x = 2; x < 96; x += 6) p.set(x, 21, 'E');
+  return p;
+}
+
 export function sceneryFrames() {
   return {
-    owambe: owambe(),
+    owambe: canopyWith('OWAMBE'),
+    canopy_family: canopyWith('FAMILY'),
+    tailor_shop: tailorShop(),
+    vulcanizer: vulcanizerShed(),
+    jetty: jetty(),
     house_notforsale: houseNotForSale(),
     apartments: apartments(),
     mamaput: mamaPut(),

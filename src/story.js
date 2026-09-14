@@ -1,7 +1,13 @@
 /* SUPER OGA - the story, the cast, and every conversation you can have on the road. */
 'use strict';
 
-const NAIRA_PER_COIN = 20;
+// Coins are money, and money has to be scarce enough that buying is a choice. At 20 a
+// coin you finished the game with more than twice what everything costs, so nothing you
+// bought - or refused - ever mattered.
+const NAIRA_PER_COIN = 10;
+
+// Twenty-five pieces of family cloth. Take a hit carrying it and some spill.
+const ASO_TOTAL = 25;
 
 const PEOPLE_IDS = ['suya', 'mamaput', 'nurse', 'water', 'okadaman', 'kekeman', 'conductor', 'mum', 'tailor', 'bride',
   'risi', 'ebun', 'fashe'];
@@ -87,9 +93,11 @@ const EFFECTS = {
   settle({ npc, game }) {
     npc.makePeace();
     game.addScore(100);
+    game.reputation++;
   },
-  anger({ npc }) {
+  anger({ npc, game }) {
     npc.makeAngry();
+    game.reputation--;
   },
   beg({ npc }) {
     if (Math.random() < 0.5) {
@@ -105,10 +113,12 @@ const EFFECTS = {
   // The bundle of family cloth is the story. Picking it up, losing it, getting it back.
   carry({ game }) {
     game.aso = true;
+    game.asoPieces = ASO_TOTAL;
     Sound.play('power');
   },
   robbed({ game, player }) {
     game.aso = false;
+    game.asoPieces = 0;
     const taken = Math.floor(game.naira / 2);
     game.naira -= taken;
     player.setForm('small');
@@ -213,13 +223,22 @@ const SCRIPTS = {
     tip: 'IF AGBERO STOP YOU, SETTLE AM OR BEG AM. NO FIGHT AM IF YOU NO GET STRENGTH.',
   }),
 
-  agbero: ({ player }) => ({
+  agbero: ({ player, game }) => {
+    // The levy depends on your name on this road.
+    const known = game.reputation >= 1;
+    const levy = known ? 50 : 100;
+    const opener = game.reputation >= 2
+      ? 'OGA! NA YOU! THE BOYS TALK SAY YOU DEY SETTLE WELL. PASS JOOR.'
+      : known
+        ? `AH, I KNOW YOUR FACE. FOR YOU, MAKE E BE ₦${levy}.`
+        : player.vehicle
+          ? `OGA! ${player.vehicle.kind === 'keke' ? 'KEKE' : 'OKADA'} MUST PAY TICKET. UNION LEVY NA ₦${levy}!`
+          : `OGA! STOP THERE! WHERE YOUR TICKET? UNION LEVY NA ₦${levy}.`;
+    return {
     start: {
-      text: player.vehicle
-        ? `OGA! ${player.vehicle.kind === 'keke' ? 'KEKE' : 'OKADA'} MUST PAY TICKET. UNION LEVY NA ₦100!`
-        : 'OGA! STOP THERE! WHERE YOUR TICKET? UNION LEVY NA ₦100.',
+      text: opener,
       choices: [
-        { label: 'SETTLE AM - ₦100', pay: 100, effect: 'settle', next: 'settled' },
+        { label: `SETTLE AM - ₦${levy}`, pay: levy, effect: 'settle', next: 'settled' },
         { label: 'ABEG, NA WEDDING I DEY GO', effect: 'beg' },
         { label: 'I NO DEY PAY ANYTHING', effect: 'anger', next: 'angry' },
       ],
@@ -228,8 +247,9 @@ const SCRIPTS = {
     begOk: 'WEDDING? AH, CONGRATS TO UNA! OYA PASS... BUT BRING JOLLOF COME FOR ME.',
     begNo: 'WEDDING NA YOUR PROBLEM! OYA COME COLLECT!',
     angry: 'YOU DEY WHINE ME? OYA COME!',
-    broke: { text: 'YOU NO GET ₦100?! YOU DEY WHINE ME? COME HERE!', effect: 'anger' },
-  }),
+    broke: { text: `YOU NO GET ₦${levy}?! YOU DEY WHINE ME? COME HERE!`, effect: 'anger' },
+    };
+  },
 
   mum: () => ({
     start: { text: 'TUNDE! THANK GOD. I HEAR SAY YOUR MOTOR KNOCK FOR OSHODI.', next: 'b' },
@@ -271,12 +291,25 @@ const SCRIPTS = {
     e: 'AND MY PIKIN - NEXT TIME, NO ENTER ANY BUS WEY THE CONDUCTOR NO GET CHANGE.',
   }),
 
-  bride: () => ({
+  bride: ({ game }) => ({
     start: { text: 'BROTHER TUNDE!!! AH! YOU REACH! AND THE ASO-EBI DEY YOUR HAND!', next: 'b' },
     b: { text: 'MAMA TALK SAY ONE CHANCE CARRY AM. I NO BELIEVE SAY YOU GO GET AM BACK.', next: 'c' },
-    c: { text: 'LOOK EVERYBODY - THE WHOLE FAMILY GO WEAR THE SAME CLOTH. NA WETIN I WANT.', next: 'd' },
-    d: { text: 'WE NEVER CUT CAKE. WE DEY WAIT FOR YOU.', next: 'e' },
-    e: 'OYA COME, MAKE WE DANCE! MY BROTHER NA ODOGWU!',
+    c: {
+      text: game.asoPieces >= ASO_TOTAL
+        ? `ALL TWENTY-FIVE PIECE DEY HERE. NOTHING MISSING. LOOK MY FACE - I DEY CRY.`
+        : game.asoPieces >= ASO_TOTAL - 6
+          ? `${game.asoPieces} PIECE COMOT THE ROAD WITH YOU. E REACH. NOBODY GO NOTICE.`
+          : `NA ${game.asoPieces} PIECE REMAIN? HMM. SOME PEOPLE GO WEAR THEIR OWN CLOTH TODAY.`,
+      next: 'd',
+    },
+    d: {
+      text: game.asoPieces >= ASO_TOTAL - 6
+        ? 'LOOK EVERYBODY - THE FAMILY GO WEAR THE SAME CLOTH. NA WETIN I WANT.'
+        : 'NO VEX. YOU CARRY AM FROM OSHODI REACH HERE. NA THE WAHALA MATTER, NO BE THE CLOTH.',
+      next: 'e',
+    },
+    e: { text: 'WE NEVER CUT CAKE. WE DEY WAIT FOR YOU.', next: 'f' },
+    f: 'OYA COME, MAKE WE DANCE! MY BROTHER NA ODOGWU!',
   }),
 };
 

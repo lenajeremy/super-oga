@@ -47,8 +47,8 @@ for (const level of LEVELS) {
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < width; x++) {
       const ch = map[y][x];
-      if ('@CFrgakN'.includes(ch) && !SOLID.has(at(x, y + 1))) fail(level, `"${ch}" at col ${x}, row ${y} is not standing on solid ground`);
-      if ('_|'.includes(ch) && at(x, y + 1) !== '~') fail(level, `platform "${ch}" at col ${x} should sit just above water`);
+      if ('@CFrgakKN'.includes(ch) && !SOLID.has(at(x, y + 1))) fail(level, `"${ch}" at col ${x}, row ${y} is not standing on solid ground`);
+      if ('_|f'.includes(ch) && at(x, y + 1) !== '~') fail(level, `platform "${ch}" at col ${x} should sit just above water`);
       if (ch === 'h' && at(x, y + 1) !== '.') fail(level, `hidden crate at col ${x} needs empty space below it`);
       if (ch === 'P' && at(x - 1, y) !== 'P') {
         let run = 0;
@@ -63,7 +63,7 @@ for (const level of LEVELS) {
   const ferried = new Set();
   map.forEach((row, y) => {
     [...row].forEach((ch, x) => {
-      if (ch === '|') for (let k = 0; k < 3; k++) ferried.add(x + k);
+      if ('|f'.includes(ch)) for (let k = 0; k < 3; k++) ferried.add(x + k);
       if (ch !== '_') return;
       let l = x;
       let r = x;
@@ -95,7 +95,7 @@ for (const level of LEVELS) {
     for (let x = 0; x < width; x++) {
       const ch = at(x, y);
       const isTop = SOLID.has(ch) && !SOLID.has(at(x, y - 1));
-      if (isTop || ch === '=' || '_|'.includes(ch)) standable.push({ x, y, ch });
+      if (isTop || ch === '=' || '_|f'.includes(ch)) standable.push({ x, y, ch });
     }
   }
   const runs = [];
@@ -107,7 +107,7 @@ for (const level of LEVELS) {
   const groundRow = Math.max(...runs.filter((r) => r.ch === '#').map((r) => r.y), 12);
   for (const run of runs) {
     if (run.ch === '#' && run.y >= groundRow) continue;        // the street itself
-    if ('_|'.includes(run.ch)) continue;                        // boats carry you to them
+    if ('_|f'.includes(run.ch)) continue;                        // boats carry you to them
     const from = standable.filter((c) => {
       if (c.y <= run.y) return false;                           // must be below the target
       const dx = c.x < run.x0 ? run.x0 - c.x : c.x > run.x1 ? c.x - run.x1 : 0;
@@ -133,6 +133,7 @@ for (const level of LEVELS) {
     if (!groundAt(tx + 1)) fail(level, `person "${kind}" at col ${tx} has no ground to stand on`);
   }
   if (!HOSTS.includes(level.host)) fail(level, `unknown Owambe host "${level.host}"`);
+  if (!decorFrames[level.goal]) fail(level, `goal building "${level.goal}" is not in the decor sprite sheet`);
   for (const field of ['story', 'tip', 'song', 'ambience']) if (!level[field]) fail(level, `missing "${field}"`);
   if (!['street', 'market', 'bridge', 'night'].includes(level.ambience)) fail(level, `unknown ambience "${level.ambience}"`);
 }

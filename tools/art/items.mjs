@@ -119,6 +119,15 @@ function warn() {
   return p;
 }
 
+function asoPiece() {
+  const p = new Pix(12, 10);
+  p.rect(1, 2, 10, 7, 'P').rect(1, 2, 10, 1, 'p');
+  for (const y of [4, 6]) p.rect(1, y, 10, 1, 'Y');
+  for (const x of [3, 7]) p.rect(x, 2, 1, 7, 'y');
+  p.rect(1, 8, 10, 1, 'p');
+  return p.outline('K');
+}
+
 function star() {
   return new Pix(5, 5).set(2, 0, 'Y').rect(0, 2, 5, 1, 'Y').rect(1, 1, 3, 3, 'Y').set(1, 4, 'Y').set(3, 4, 'Y').set(2, 2, 'W');
 }
@@ -146,5 +155,6 @@ export function itemFrames() {
     dust2: dust(1),
     warn: warn(),
     star: star(),
+    aso: asoPiece(),
   };
 }

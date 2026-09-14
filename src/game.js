@@ -18,8 +18,12 @@ const Game = {
   lives: 5,
   score: 0,
   naira: 100,
-  // Is Tunde carrying the family cloth? The whole story is this flag changing hands.
+  // Is Tunde carrying the family cloth, and how much of it is left? The whole story is
+  // this changing hands, and pieces spill every time he takes a hit.
   aso: false,
+  asoPieces: 0,
+  // How the agberos on this road feel about him: settle with them and word spreads.
+  reputation: 0,
   time: 0,
   timeTick: 0,
   form: 'small',
@@ -133,7 +137,7 @@ const Game = {
     } else if (this.stateTime > 20 && Input.confirm()) {
       Sound.unlock();
       Sound.play('select');
-      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, aso: false, form: 'small', storyIndex: 0, storyChars: 0 });
+      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, aso: false, asoPieces: 0, reputation: 0, form: 'small', storyIndex: 0, storyChars: 0 });
       this.setState('story');
     }
   },
@@ -327,6 +331,19 @@ const Game = {
     this.world.float(`+₦${amount}`, p.cx, p.y - 14, '#63d68f');
   },
 
+  // Pieces of the cloth knock loose when he is hit, and can be picked back up.
+  dropAso(count, from) {
+    if (!this.aso || this.asoPieces <= 0) return;
+    const lost = Math.min(count, this.asoPieces);
+    this.asoPieces -= lost;
+    for (let i = 0; i < lost; i++) this.world.add(new AsoPiece(this.world, from.cx - 6, from.y + 4));
+    this.world.float(`-${lost} ASO-EBI!`, from.cx, from.y - 18, '#e3412f');
+  },
+
+  addAso(count) {
+    this.asoPieces = Math.min(25, this.asoPieces + count);
+  },
+
   addLife(x, y) {
     this.lives++;
     Sound.play('oneUp');
@@ -474,7 +491,7 @@ const Game = {
     Assets.draw(ctx, 'hero', 'icon_head', VIEW_W / 2 - 40, 80);
     drawText(ctx, `× ${this.lives}`, VIEW_W / 2 - 20, 83);
     drawText(ctx, `₦${this.naira}`, VIEW_W / 2 + 14, 83, { color: '#ffcd3a' });
-    if (this.aso) drawText(ctx, 'CARRYING THE ASO-EBI', VIEW_W / 2, 94, { align: 'center', color: '#63d68f' });
+    if (this.aso) drawText(ctx, `CARRYING ${this.asoPieces} PIECES OF ASO-EBI`, VIEW_W / 2, 94, { align: 'center', color: '#63d68f' });
     this.centered(ctx, wrapText(level.story, 340), 106);
     this.centered(ctx, wrapText(`TIP: ${level.tip}`, 340), 146, { color: '#a8a2b4' });
     if (this.fromCheckpoint) drawText(ctx, 'YOU GO START FROM THE BUS STOP', VIEW_W / 2, 186, { align: 'center', color: '#63d68f' });
@@ -491,9 +508,13 @@ const Game = {
     drawText(ctx, LEVELS[this.levelIndex].id, 196, 13, { align: 'center' });
     Assets.draw(ctx, 'hero', 'icon_head', 236, 6);
     drawText(ctx, `×${this.lives}`, 254, 9);
-    if (this.aso) drawText(ctx, 'ASO-EBI', 284, 4, { color: '#ffcd3a' });
+    if (this.aso) drawText(ctx, `ASO-EBI ${this.asoPieces}`, 284, 4, { color: this.asoPieces < 20 ? '#e3412f' : '#ffcd3a' });
     const ride = this.world.player.vehicle;
-    if (ride) drawText(ctx, ride.kind === 'keke' ? `KEKE ${'♥'.repeat(ride.hp)}` : 'OKADA', 284, 13, { color: '#63d68f' });
+    if (ride) {
+      const secs = Math.ceil(ride.time / 60);
+      const label = ride.kind === 'keke' ? `KEKE ${'♥'.repeat(ride.hp)}` : 'OKADA';
+      drawText(ctx, `${label} ${secs}`, 284, 13, { color: secs <= 3 && this.world.frame % 16 < 8 ? '#e3412f' : '#63d68f' });
+    }
     if (this.cheat) drawText(ctx, 'CHEAT', 196, 21, { align: 'center', color: '#63d68f' });
     drawText(ctx, 'TIME', VIEW_W - 8, 4, { align: 'right' });
     const warn = this.hurry && Math.floor(this.world.frame / 16) % 2 === 0;
@@ -530,6 +551,7 @@ const Game = {
     drawText(ctx, 'YOU BE ODOGWU!', VIEW_W / 2, 24, { align: 'center', scale: 3, color: '#ffcd3a', outline: true });
     drawText(ctx, 'RONKE WEDDING DON SWEET, AND THE ASO-EBI REACH ON TIME.', VIEW_W / 2, 58, { align: 'center', outline: true });
     drawText(ctx, 'EKO O NI BAJE!', VIEW_W / 2, 74, { align: 'center', scale: 2, color: '#63d68f', outline: true });
+    drawText(ctx, `ASO-EBI DELIVERED ${this.asoPieces} / 25`, VIEW_W / 2, 90, { align: 'center', color: this.asoPieces >= 25 ? '#63d68f' : '#ffcd3a', outline: true });
     drawText(ctx, `FINAL SCORE ${this.score}`, VIEW_W / 2, 102, { align: 'center', outline: true });
     drawText(ctx, `MONEY LEFT ₦${this.naira}   HI ${this.hiscore}`, VIEW_W / 2, 114, { align: 'center', color: '#ffcd3a', outline: true });
     const hop = Math.abs(Math.sin(this.stateTime * 0.08)) * 10;

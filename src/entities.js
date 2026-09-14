@@ -2,6 +2,8 @@
  * the street wahala, pick-ups and effects. */
 'use strict';
 
+// A ride is hired, not owned: fifteen seconds and the man wants his machine back.
+const RIDE_SECONDS = 15;
 const RIDES = {
   okada: { max: 3.6, accel: 0.14, jump: -7.2 },
   keke: { max: 2.3, accel: 0.08, jump: -5.8 },
@@ -124,7 +126,7 @@ class Player extends Entity {
 
   mount(ride) {
     if (this.vehicle || this.state !== 'play') return;
-    this.vehicle = { kind: ride.kind, hp: ride.kind === 'keke' ? 3 : 1, owner: ride.owner };
+    this.vehicle = { kind: ride.kind, hp: ride.kind === 'keke' ? 3 : 1, owner: ride.owner, time: RIDE_SECONDS * 60 };
     ride.dead = true;
     this.resize();
     this.x = ride.cx - this.w / 2;
@@ -195,6 +197,7 @@ class Player extends Entity {
     this.freeze = 20;
     Sound.play('shrink');
     this.world.float(pick(['CHAI!', 'EHN EHN!', 'WAHALA!']), this.cx, this.y - 8, '#e3412f');
+    this.world.game.dropAso(2, this);
   }
 
   die(cause) {
@@ -268,6 +271,20 @@ class Player extends Entity {
     }
     const world = this.world;
     for (const key of ['invuln', 'throwTimer', 'mountCooldown']) if (this[key] > 0) this[key]--;
+    // The hire runs out. Warn near the end, then hand the machine back.
+    if (this.vehicle && this.onGround) {
+      this.vehicle.time--;
+      if (this.vehicle.time === 180) {
+        Sound.play('warn');
+        world.float('TIME DEY GO! 3 SECONDS!', this.cx, this.y - 12, '#e3412f');
+      }
+      if (this.vehicle.time <= 0) {
+        const kind = this.vehicle.kind;
+        this.dismount();
+        world.float(kind === 'keke' ? 'KEKE TIME DON FINISH!' : 'OKADA TIME DON FINISH!', this.cx, this.y - 10, '#ffcd3a');
+        return;
+      }
+    }
     if (this.odogwu > 0) {
       this.odogwu--;
       if (this.t % 6 === 0) {
@@ -357,11 +374,17 @@ class Player extends Entity {
   }
 
   landOnPlatforms() {
+    const was = this.ride;
     this.ride = null;
     if (this.vy < 0) return;
     for (const e of this.world.entities) {
       if (!(e instanceof Platform) || this.x + this.w <= e.x + 1 || this.x >= e.x + e.w - 1) continue;
-      if (this.prevBottom <= e.y - e.dy + 2 && this.bottom >= e.y) {
+      const landing = this.prevBottom <= e.y - e.dy + 2 && this.bottom >= e.y;
+      // A platform sinking under you drops away faster than you fall, so the plain
+      // landing test loses contact the moment it starts descending. Stay stuck to the
+      // one you were already standing on while it is still under your feet.
+      const staying = was === e && this.bottom <= e.y + Math.abs(e.dy) + 3;
+      if (landing || staying) {
         this.y = e.y - this.h;
         this.vy = 0;
         this.onGround = true;
@@ -737,7 +760,11 @@ class Agbero extends Enemy {
     super(world, x + 3, y - 5, 10, 21);
     this.points = 200;
     this.cooldown = 0;
-    this.mood = 'waiting'; // waiting -> peace | angry
+    // Word travels on this road. Settle with a couple and the next one waves you past;
+    // refuse a couple and he is already vexed when you arrive.
+    const rep = world.game.reputation;
+    this.mood = rep >= 2 ? 'peace' : rep <= -2 ? 'angry' : 'waiting';
+    this.greeted = this.mood !== 'waiting';
   }
 
   get prompt() {
@@ -835,11 +862,13 @@ class Agbero extends Enemy {
 }
 
 class Okada extends Enemy {
-  constructor(world, x, y) {
+  constructor(world, x, y, dir = -1) {
     super(world, x, y - 4, 26, 20);
     this.points = 400;
     this.alwaysActive = true;
     this.bounced = false;
+    this.dir = dir;
+    this.facing = dir;
   }
 
   update() {
@@ -848,13 +877,14 @@ class Okada extends Enemy {
       this.updateKO();
       return;
     }
-    if (this.world.moveX(this, -2.8)) {
+    if (this.world.moveX(this, this.dir * 2.8)) {
       this.knockOut('E DON CRASH!');
       this.world.shake = 8;
       return;
     }
     this.fall();
-    if (this.x + this.w < this.world.camera.x - 48) this.dead = true;
+    const off = this.dir < 0 ? this.x + this.w < this.world.camera.x - 48 : this.x > this.world.camera.x + VIEW_W + 48;
+    if (off) this.dead = true;
   }
 
   // Okadas don't stop for anybody: you just bounce off the rider.
@@ -879,31 +909,33 @@ class Okada extends Enemy {
   }
 
   draw(ctx, camX) {
-    this.sprite(ctx, camX, 'enemies', (this.t >> 2) % 2 ? 'okada_ride2' : 'okada_ride1', { flipX: true, flipY: this.state === 'ko' });
+    this.sprite(ctx, camX, 'enemies', (this.t >> 2) % 2 ? 'okada_ride2' : 'okada_ride1', { flipX: this.dir < 0, flipY: this.state === 'ko' });
   }
 }
 
 // Flashes a "!" at the screen edge, then sends an okada in from the right.
 class OkadaWarning extends Entity {
-  constructor(world, rowY) {
+  constructor(world, rowY, dir = -1) {
     super(world, world.camera.x + VIEW_W, rowY, 1, 1);
     this.alwaysActive = true;
     this.timer = 50;
+    this.dir = dir;
     Sound.play('warn');
   }
 
   update() {
     if (--this.timer > 0) return;
     this.dead = true;
-    const x = this.world.camera.x + VIEW_W + 8;
+    const x = this.dir < 0 ? this.world.camera.x + VIEW_W + 8 : this.world.camera.x - 34;
     if (this.world.groundTop(Math.floor((x + 13) / TILE)) !== null) {
-      this.world.add(new Okada(this.world, x, this.y));
+      this.world.add(new Okada(this.world, x, this.y, this.dir));
       Sound.play('horn');
     }
   }
 
+  // The warning sits on the side the okada is coming from.
   draw(ctx) {
-    if ((this.timer >> 2) % 2) Assets.draw(ctx, 'items', 'warn', VIEW_W - 22, this.y - 2);
+    if ((this.timer >> 2) % 2) Assets.draw(ctx, 'items', 'warn', this.dir < 0 ? VIEW_W - 22 : 6, this.y - 2);
   }
 }
 
@@ -1036,6 +1068,47 @@ class Sachet extends Entity {
   }
 }
 
+// A piece of the family cloth, knocked loose. Scatters, then sits there to be picked up.
+class AsoPiece extends Entity {
+  constructor(world, x, y) {
+    super(world, x, y, 12, 10);
+    this.vx = rand(-2, 2);
+    this.vy = rand(-4, -2.5);
+    this.life = 600;
+    this.alwaysActive = true;
+  }
+
+  update() {
+    this.t++;
+    if (--this.life <= 0) {
+      this.dead = true;
+      return;
+    }
+    this.vy = Math.min(this.vy + 0.3, 5);
+    if (this.world.moveX(this, this.vx)) this.vx *= -0.4;
+    const hit = this.world.moveY(this, this.vy);
+    if (hit === 1) {
+      this.vy = 0;
+      this.vx *= 0.7;
+    } else if (hit === -1) {
+      this.vy = 0;
+    }
+    if (this.y > this.world.height + 16) this.dead = true;
+  }
+
+  touch(player) {
+    if (this.t < 20) return;
+    this.dead = true;
+    this.world.game.addAso(1);
+    Sound.play('coin');
+  }
+
+  draw(ctx, camX) {
+    if (this.life < 120 && (this.life >> 2) % 2 === 0) return;
+    Assets.draw(ctx, 'items', 'aso', this.x - camX, this.y);
+  }
+}
+
 class Checkpoint extends Entity {
   constructor(world, x, y) {
     super(world, x, y + TILE - 48, 28, 48);
@@ -1055,27 +1128,33 @@ class Checkpoint extends Entity {
   }
 }
 
+// Where the stage ends. Which building that is comes from the level - the tailor's shop,
+// a vulcanizer's shed, Mama Ebun's jetty - and only the last stage is the party itself.
 class Goal extends Entity {
   constructor(world, x, y) {
-    super(world, x, y + TILE - 84, 104, 84);
+    const name = world.def.goal || 'owambe';
+    const { w, h } = Assets.size('decor', name);
+    super(world, x, y + TILE - h, w, h);
+    this.name = name;
     this.reached = false;
   }
 
   update() {
     this.t++;
-    if (this.reached && this.t % 4 === 0) {
-      this.world.particles.push(new Particle(this.x + rand(10, 94), this.y + 26, { vx: rand(-0.4, 0.4), vy: rand(0.3, 0.9), life: 80, frames: ['note1', 'note2'], rate: 10 }));
+    // Only the Owambe throws music into the air.
+    if (this.reached && this.name === 'owambe' && this.t % 4 === 0) {
+      this.world.particles.push(new Particle(this.x + rand(10, this.w - 10), this.y + 26, { vx: rand(-0.4, 0.4), vy: rand(0.3, 0.9), life: 80, frames: ['note1', 'note2'], rate: 10 }));
     }
   }
 
   touch(player) {
-    if (this.reached || player.cx < this.x + 24) return;
+    if (this.reached || player.cx < this.x + Math.min(24, this.w / 3)) return;
     this.reached = true;
     this.world.game.levelClear();
   }
 
   draw(ctx, camX) {
-    Assets.draw(ctx, 'decor', 'owambe', this.x - camX, this.y);
+    Assets.draw(ctx, 'decor', this.name, this.x - camX, this.y);
   }
 }
 
@@ -1085,6 +1164,7 @@ class Platform extends Entity {
     this.kind = kind;
     this.dx = 0;
     this.dy = 0;
+    this.homeY = this.y;
     this.vx = kind === 'canoe' ? 0.8 : 0;
     this.vy = 0;
     if (kind === 'lift') {
@@ -1099,7 +1179,14 @@ class Platform extends Entity {
   update() {
     const px = this.x;
     const py = this.y;
-    if (this.kind === 'canoe') {
+    if (this.kind === 'raft') {
+      // Stand on it and it settles into the water; step off and it floats back up. The
+      // sink is slow on purpose: you get about two seconds to cross and jump off before
+      // your feet go under, which is the whole point of the thing.
+      const carrying = this.world.player.ride === this;
+      this.y += carrying ? 0.14 : -0.5;
+      this.y = clamp(this.y, this.homeY, this.homeY + 26);
+    } else if (this.kind === 'canoe') {
       this.x += this.vx;
       if (this.world.solidAt(this.vx > 0 ? this.x + this.w : this.x - 1, this.y + 2)) {
         this.x = px;
@@ -1123,7 +1210,7 @@ class Platform extends Entity {
 
   draw(ctx, camX) {
     const x = Math.round(this.x) - camX;
-    if (this.kind === 'canoe') {
+    if (this.kind === 'canoe' || this.kind === 'raft') {
       Assets.draw(ctx, 'decor', 'canoe', x, this.y - 2);
       return;
     }

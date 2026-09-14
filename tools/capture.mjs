@@ -225,15 +225,30 @@ for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
     const foe = w.entities.some((e) => e instanceof scope.api.Enemy && e.alive && e.x + e.w > p.x && e.x - (p.x + p.w) < 46 && Math.abs(e.bottom - p.bottom) < 30);
     const overWater = (x) => w.tileAt(Math.floor(x / 16), Math.floor((p.bottom + 20) / 16)) === '~';
     if (p.onGround && !p.ride && overWater(front + 16)) {
-      const boat = w.entities.filter((e) => e.constructor.name === 'Platform' && e.x + e.w > p.x && e.x - p.x < 150).sort((a, b) => a.x - b.x)[0];
-      if (!(boat && boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40)) { press(); tick(1); continue; }
+      // Short water is simply jumped; only a real stretch is worth a boat. And a canoe
+      // drifts over to you, whereas a lift never will - so jump to a lift when it is low.
+      let far = 8;
+      while (far < 240 && !w.solidAt(front + far, p.bottom + 4)) far += 8;
+      if (far > 112) {
+        const boat = w.entities.filter((e) => e.constructor.name === 'Platform' && e.x + e.w > p.x && e.x - p.x < 150).sort((a, b) => a.x - b.x)[0];
+        const gapTo = boat ? boat.x + boat.w - p.x : Infinity;
+        const ferry = boat && Math.abs(boat.dx) > 0.01;
+        const ready = boat && (ferry
+          ? boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40
+          : gapTo < 150 && boat.y - p.bottom > -70 && boat.y - p.bottom < 30);
+        if (!ready) { press(); tick(1); continue; }
+      }
     }
     // Riding a canoe or lift: look right for the next foothold - solid ground or another
     // platform - and hop across once it is in range, otherwise sit tight and ride.
     if (p.ride) {
+      // A canoe is ferrying you somewhere: stay aboard until the far side is close.
+      // A lift only goes up and down, so you have to hop off it to make progress.
+      const ferry = Math.abs(p.ride.dx) > 0.01;
+      const maxDx = ferry ? 58 : 150;
       let best = null;
-      for (let dx = 18; dx < 130 && !best; dx += 6) {
-        for (let dy = -78; dy <= 26; dy += 6) {
+      for (let dx = 18; dx < maxDx && !best; dx += 6) {
+        for (let dy = -90; dy <= 30; dy += 6) {
           if (w.solidAt(p.x + p.w + dx, p.bottom + dy)) { best = { dx, dy }; break; }
         }
       }
@@ -241,7 +256,7 @@ for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
         if (e.constructor.name !== 'Platform' || e === p.ride) continue;
         const dx = e.x - (p.x + p.w);
         const dy = e.y - p.bottom;
-        if (dx > 4 && dx < 110 && dy > -78 && (!best || dx < best.dx)) best = { dx, dy };
+        if (dx > 4 && dx < maxDx && dy > -80 && dy < 40 && (!best || dx < best.dx)) best = { dx, dy };
       }
       if (!best) { press(); tick(1); continue; }
       Game._jump = best.dy < -20 ? 16 : 9;
