@@ -11,11 +11,13 @@ const scope = { window: {} };
 for (const file of ['assets/sprites/manifest.js', 'assets/photos/credits.js', 'assets/voice/manifest.js']) {
   vm.runInNewContext(fs.readFileSync(path.join(root, file), 'utf8'), scope);
 }
+// URLs in the manifests carry a ?v= content stamp; on disk the files are plain.
+const plain = (src) => src.split('?')[0];
 const files = [
-  ...Object.values(scope.window.SPRITE_ATLAS.sheets).map((sheet) => sheet.src),
-  ...scope.window.PHOTO_CREDITS.map((photo) => `assets/photos/${photo.name}.jpg`),
+  ...Object.values(scope.window.SPRITE_ATLAS.sheets).map((sheet) => plain(sheet.src)),
+  ...scope.window.PHOTO_CREDITS.map((photo) => plain(photo.src || `assets/photos/${photo.name}.jpg`)),
 ];
-const voices = Object.values(scope.window.VOICE_CLIPS || {}).map((clip) => clip.src);
+const voices = Object.values(scope.window.VOICE_CLIPS || {}).map((clip) => plain(clip.src));
 const mime = (file) => (file.endsWith('.m4a') ? 'audio/mp4' : file.endsWith('.mp3') ? 'audio/mpeg' : 'image/jpeg');
 const data = Object.fromEntries(
   [...files, ...voices].map((file) => [file, `data:${mime(file)};base64,${fs.readFileSync(path.join(root, file)).toString('base64')}`]),

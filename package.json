@@ -5,7 +5,8 @@
   "description": "SUPER OGA: Wahala for Eko. A retro platformer on the streets of Lagos.",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "build": "npm run sprites && npm run photos && npm run bundle",
+    "build": "npm run sprites && npm run photos && npm run voices && npm run bundle",
+    "voices": "node tools/build-voices.mjs",
     "sprites": "node tools/build-sprites.mjs",
     "photos": "node tools/fetch-photos.mjs",
     "bundle": "node tools/bundle-assets.mjs",

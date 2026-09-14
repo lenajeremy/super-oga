@@ -2,6 +2,7 @@
 window.PHOTO_CREDITS = [
   {
     "name": "title_danfo",
+    "src": "assets/photos/title_danfo.jpg?v=c044221f",
     "title": "Yellow van terminal on the roadside",
     "author": "Richard Badejo",
     "page": "https://www.pexels.com/photo/yellow-van-terminal-on-the-roadside-5409303/",
@@ -10,6 +11,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_oshodi",
+    "src": "assets/photos/bg_oshodi.jpg?v=25303b7e",
     "title": "People on the road",
     "author": "Daniel Sikpi",
     "page": "https://www.pexels.com/photo/people-on-the-road-11390779/",
@@ -18,6 +20,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_market",
+    "src": "assets/photos/bg_market.jpg?v=e015b9cd",
     "title": "Bustling Lagos street market scene at sunset",
     "author": "Bamidele Olamilekan",
     "page": "https://www.pexels.com/photo/bustling-lagos-street-market-scene-at-sunset-30583818/",
@@ -26,6 +29,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_lagoon",
+    "src": "assets/photos/bg_lagoon.jpg?v=61e4b503",
     "title": "Modern Lagos skyline with watercraft in lagoon",
     "author": "Fawaz Onakoya",
     "page": "https://www.pexels.com/photo/modern-lagos-skyline-with-watercraft-in-lagoon-37405043/",
@@ -34,6 +38,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_ojuelegba",
+    "src": "assets/photos/bg_ojuelegba.jpg?v=f616a4ae",
     "title": "Time lapse photography of cars on the road during nighttime",
     "author": "Okayimagery",
     "page": "https://www.pexels.com/photo/time-lapse-photography-of-cars-on-the-road-during-nighttime-12904000/",
@@ -42,6 +47,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_makoko",
+    "src": "assets/photos/bg_makoko.jpg?v=8c68cd2b",
     "title": "Vivid street view of Makoko's floating community in Lagos",
     "author": "Dosu Relief Foundation",
     "page": "https://www.pexels.com/photo/an-hardworking-little-girl-27571399/",
@@ -50,6 +56,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "bg_island",
+    "src": "assets/photos/bg_island.jpg?v=1fa4e813",
     "title": "Street scene with yellow bus in Lagos, Nigeria",
     "author": "Kenechukwu Emmanuel",
     "page": "https://www.pexels.com/photo/street-scene-with-yellow-bus-in-lagos-nigeria-35894835/",
@@ -58,6 +65,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "victory_sunset",
+    "src": "assets/photos/victory_sunset.jpg?v=5a477d33",
     "title": "Skyline of Lagos at sunset captured from water",
     "author": "Fera",
     "page": "https://www.pexels.com/photo/skyline-of-lagos-at-sunset-captured-from-water-36602313/",
@@ -66,6 +74,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "food_jollof",
+    "src": "assets/photos/food_jollof.jpg?v=61246eaf",
     "title": "Rice with fish and vegetables on a serving dish",
     "author": "Keesha's Kitchen",
     "page": "https://www.pexels.com/photo/rice-with-fish-and-vegetables-on-a-serving-dish-13915043/",
@@ -74,6 +83,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "food_suya",
+    "src": "assets/photos/food_suya.jpg?v=399fcd83",
     "title": "Street vendor grilling meat skewers in Africa",
     "author": "The Northern Lense",
     "page": "https://www.pexels.com/photo/street-vendor-grilling-meat-skewers-in-africa-31120524/",
@@ -82,6 +92,7 @@ window.PHOTO_CREDITS = [
   },
   {
     "name": "food_puffpuff",
+    "src": "assets/photos/food_puffpuff.jpg?v=a1fec42c",
     "title": "Close-up shot of delicious puff puff on white ceramic bowl",
     "author": "Keesha's Kitchen",
     "page": "https://www.pexels.com/photo/close-up-shot-of-delicious-puff-puff-on-white-ceramic-bowl-13915068/",

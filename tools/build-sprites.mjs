@@ -13,6 +13,7 @@
  * writing each JPG this script decodes it again and checks that round trip.
  */
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -134,8 +135,11 @@ for (const [sheetName, frames] of Object.entries(sheets)) {
   if (check.keyMistakes > 0 || check.maxError > 16) {
     throw new Error(`${sheetName}.jpg failed round-trip check: ${JSON.stringify(check)}`);
   }
+  // Stamp the URL with a hash of the file. The name on disk stays put, but the URL
+  // changes whenever the art does - which is what lets a CDN cache it forever safely.
+  const stamp = crypto.createHash('sha1').update(fs.readFileSync(jpgFile)).digest('hex').slice(0, 8);
   manifest.sheets[sheetName] = {
-    src: `assets/sprites/${sheetName}.jpg`,
+    src: `assets/sprites/${sheetName}.jpg?v=${stamp}`,
     w: width,
     h: height,
     frames: Object.fromEntries(

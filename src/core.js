@@ -29,12 +29,16 @@ const Store = {
   },
 };
 
+// Asset URLs carry a ?v= content stamp so the CDN can cache them forever; the inlined
+// file:// bundle is keyed on the plain path, so strip the stamp when looking there.
+const assetKey = (src) => src.split('?')[0];
+
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`Could not load ${src}`));
-    img.src = (window.ASSET_DATA && window.ASSET_DATA[src]) || src;
+    img.src = (window.ASSET_DATA && window.ASSET_DATA[assetKey(src)]) || src;
   });
 }
 
@@ -90,8 +94,8 @@ const Assets = {
           this.sheets[name] = { canvas: keyOutMagenta(img, atlas.scale, atlas.keyRadius), frames: sheet.frames };
         }),
       ),
-      ...window.PHOTO_CREDITS.map(({ name }) =>
-        loadImage(`assets/photos/${name}.jpg`).then((img) => {
+      ...window.PHOTO_CREDITS.map(({ name, src }) =>
+        loadImage(src || `assets/photos/${name}.jpg`).then((img) => {
           this.photos[name] = img;
         }),
       ),
@@ -110,7 +114,7 @@ const Assets = {
           el.addEventListener('canplaythrough', () => settle(true), { once: true });
           el.addEventListener('error', () => settle(false), { once: true });
           setTimeout(() => settle(el.readyState >= 2), 4000);
-          el.src = (window.ASSET_DATA && window.ASSET_DATA[clip.src]) || clip.src;
+          el.src = (window.ASSET_DATA && window.ASSET_DATA[assetKey(clip.src)]) || clip.src;
         }),
       );
     }
