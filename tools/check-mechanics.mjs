@@ -29,7 +29,7 @@ sc.AudioContext=class{constructor(){this.sampleRate=44100;this.currentTime=0;thi
  createGain(){return an();}createOscillator(){return an();}createBiquadFilter(){return an();}createBufferSource(){return an();}
  createConvolver(){return an();}createDynamicsCompressor(){return an();}createBuffer(c,l){return{getChannelData:()=>new Float32Array(l)};}resume(){}suspend(){}};
 vm.createContext(sc);
-for(const src of fs.readFileSync(root+'/index.html','utf8').match(/<script src="([^"]+)"><\/script>/g).map(t=>t.match(/src="([^"]+)"/)[1]))
+for(const src of fs.readFileSync(root+'/index.html','utf8').match(/<script src="([^"]+)"><\/script>/g).map(t=>t.match(/src="([^"]+)"/)[1].split('?')[0]))
  vm.runInContext(fs.readFileSync(path.join(root,src),'utf8'),sc,{filename:src});
 vm.runInContext('this.api={Game,Input,LEVELS,Spring,Boss,SecretExit,Rat,FASHE_THREATS,Sound};',sc);
 const {Game,Input,LEVELS,FASHE_THREATS,Sound}=sc.api;
@@ -168,7 +168,9 @@ const ok=(label,pass,extra='')=>{ if(!pass)failures++; console.log('  '+(pass?'o
 {
   Game.levelIndex=4; Game.beginPlay(); tick(3);
   Game.cheat=true;
-  const w=Game.world, boss=w.boss;
+  const w=Game.world, boss=w.boss, p=w.player;
+  // Stand next to him: out of earshot he is silent now, which is the point of 6c.
+  p.x = boss.cx + 40; p.y = boss.bottom - p.h; p.onGround = true;
   const spoken=[];
   const realSpeak=Sound.speak;
   Sound.speak=(id)=>spoken.push(id);
@@ -182,10 +184,58 @@ const ok=(label,pass,extra='')=>{ if(!pass)failures++; console.log('  '+(pass?'o
     const idx=id.startsWith('fashe_t')?Number(id.slice(7)):-1;
     if(idx>=0 && shown && FASHE_THREATS[idx]===shown.text) matched++;
     tick(30);
+    p.x = boss.cx + 40;
   }
   Sound.speak=realSpeak;
   ok('every threat he speaks is the one drawn on screen', matched===6, matched+'/6 matched');
   ok('and the 1-3 robbery line never plays in 2-2', wrongStage===0, wrongStage+' wrong clips');
+}
+
+// 6c. voices must respect distance. Fashe updates from the moment the stage loads, so
+// he used to shout threats at you from the far end of the level.
+{
+  Game.levelIndex=4; Game.beginPlay(); tick(3);
+  Game.cheat=true;
+  const w=Game.world, p=w.player, boss=w.boss;
+  const heard=[];
+  const realSpeak=Sound.speak;
+  Sound.speak=(id,o)=>heard.push({id, vol:(o&&o.vol)||0});
+
+  // stand at the start of the stage, ten screens away from him
+  for(let f=0;f<720;f++){ press(); tick(1); }
+  const away = Math.round(Math.abs(p.cx-boss.cx));
+  ok('Fashe is silent from across the stage', heard.length===0, away+'px away, '+heard.length+' clips');
+
+  // now stand next to him
+  heard.length=0;
+  p.x = boss.cx + 60; p.y = boss.bottom - p.h; p.onGround = true;
+  boss.talkTimer = 1;
+  for(let f=0;f<10;f++){ press(); tick(1); }
+  ok('but he speaks when you are on him', heard.length>0, heard.length+' clip(s) at vol '+(heard[0]||{}).vol);
+
+  // and quieter from further off
+  heard.length=0;
+  p.x = boss.cx + 200; boss.talkTimer = 1;
+  for(let f=0;f<10;f++){ press(); tick(1); }
+  const far = (heard[0]||{}).vol || 0;
+  ok('and quieter the further you are', far>0 && far<0.5, 'vol '+far.toFixed(2)+' at 200px');
+  Sound.speak=realSpeak;
+}
+
+// 6d. nobody hawks over the stage title in the opening seconds
+{
+  const quiet=[];
+  const realSpeak=Sound.speak;
+  Sound.speak=(id)=>quiet.push(id);
+  let noisy=[];
+  for (const idx of [0,1,2,3,4,5]) {
+    Game.levelIndex=idx; Game.beginPlay(); tick(3);
+    Game.cheat=true; quiet.length=0;
+    for(let f=0;f<200;f++){ press(); tick(1); }
+    if (quiet.length) noisy.push(LEVELS[idx].id+':'+quiet[0]);
+  }
+  Sound.speak=realSpeak;
+  ok('no voice fires as a stage opens', noisy.length===0, noisy.join(', ')||'all six quiet');
 }
 
 // 7. punching

@@ -136,7 +136,7 @@ const LEVELS = [
       [71, 'generator'], [88, 'lamp'], [96, 'pos'], [124, 'billboard_suya', 'food_suya'], [140, 'lamp'], [150, 'stall'],
       [168, 'pos'], [184, 'stall'], [200, 'lamp'],
     ],
-    npcs: [[5, 'kekeman'], [40, 'mamaput'], [82, 'water'], [120, 'okadaman'], [178, 'suya']],
+    npcs: [[16, 'kekeman'], [40, 'mamaput'], [82, 'water'], [120, 'okadaman'], [178, 'suya']],
     map: joinChunks(
       chunk(40, { put: [[11, 2, '@'], [8, 11, '?U?'], [9, 15, 'ooo'], [9, 19, '======='], [7, 20, 'ooooo'], [11, 28, 'g'], [9, 32, 'm']] }),
       chunk(40, {

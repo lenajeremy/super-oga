@@ -104,7 +104,8 @@ scope.AudioContext = class {
 vm.createContext(scope);
 const SCRIPTS = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
   .match(/<script src="([^"]+)"><\/script>/g)
-  .map((tag) => tag.match(/src="([^"]+)"/)[1]);
+  // Script tags carry a ?v= cache stamp; on disk the files are plain.
+  .map((tag) => tag.match(/src="([^"]+)"/)[1].split('?')[0]);
 
 let failures = 0;
 const fail = (msg) => { failures++; console.log(`  FAIL ${msg}`); };

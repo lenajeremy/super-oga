@@ -68,7 +68,7 @@ scope.AudioContext = class {
 
 vm.createContext(scope);
 for (const src of fs.readFileSync(path.join(root, 'index.html'), 'utf8')
-  .match(/<script src="([^"]+)"><\/script>/g).map((t) => t.match(/src="([^"]+)"/)[1])) {
+  .match(/<script src="([^"]+)"><\/script>/g).map((t) => t.match(/src="([^"]+)"/)[1].split('?')[0])) {
   vm.runInContext(fs.readFileSync(path.join(root, src), 'utf8'), scope, { filename: src });
 }
 vm.runInContext('this.api = { Game, Input, LEVELS };', scope);

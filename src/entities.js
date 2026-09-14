@@ -4,6 +4,11 @@
 
 // A ride is hired, not owned: fifteen seconds and the man wants his machine back.
 const RIDE_SECONDS = 15;
+// How far Fashe's voice carries. Beyond this he is silent: he used to shout from the far
+// end of the stage, because he updates from the moment it loads.
+const BOSS_EARSHOT = 260;
+// A few seconds of quiet as a stage opens, so nobody hawks over the stage title.
+const OPENING_QUIET = 240;
 const RIDES = {
   okada: { max: 3.6, accel: 0.14, jump: -7.2 },
   keke: { max: 2.3, accel: 0.08, jump: -5.8 },
@@ -587,7 +592,10 @@ class Npc extends Entity {
     const p = this.world.player;
     const dist = Math.abs(p.cx - this.cx);
     // Hawk at anybody who comes within earshot, then hold off so it does not nag.
+    // Give the stage a moment to settle before anyone starts hawking, so a trader stood
+    // near the start line does not shout the instant the level appears.
     if (call && !this.callCooldown && !this.world.game.dialog && p.state === 'play' &&
+        this.world.frame > OPENING_QUIET &&
         dist < 150 && Math.abs(p.bottom - this.bottom) < 44 && this.world.nearCamera(this, 0)) {
       this.callCooldown = 260 + Math.floor(Math.random() * 160);
       this.world.float(call.text, this.cx, this.y - 12, '#ffcd3a');
@@ -1103,13 +1111,23 @@ class Boss extends Enemy {
   // Say one of his lines out loud, and show that same line. The clip ids come from
   // tools/build-voices.mjs, which reads the very same arrays out of src/story.js - so
   // what he says and what is drawn can never be different lines.
+  // How loud he is from here. He has to keep updating from the moment the stage loads,
+  // or he would reset every time the camera looked away - but he must not be heard from
+  // the far end of the level, which is where he was shouting from.
+  get earshot() {
+    const dist = Math.abs(this.world.player.cx - this.cx);
+    return dist > BOSS_EARSHOT ? 0 : 1 - dist / BOSS_EARSHOT;
+  }
+
   say(which = 'threat', colour = '#e3412f') {
+    const near = this.earshot;
+    if (near <= 0) return;
     const hurt = which === 'hurt';
     const lines = hurt ? FASHE_HURT : FASHE_THREATS;
     const i = hurt ? Math.floor(Math.random() * lines.length) : this.said++ % lines.length;
     this.world.float(lines[i], this.cx, this.y - 14, colour);
     Sound.speak(`${hurt ? 'fashe_h' : 'fashe_t'}${i}`, {
-      vol: 0.9,
+      vol: 0.95 * near,
       fallback: { vowels: hurt ? 'a-o' : 'oa-e-ua', pitch: 96 },
     });
   }
@@ -1128,8 +1146,9 @@ class Boss extends Enemy {
     }
     this.facing = Math.sign(p.cx - this.cx) || this.facing;
 
-    // Taunts on a timer, and faster the angrier he gets.
-    if (--this.talkTimer <= 0) {
+    // Taunts on a timer, and faster the angrier he gets - but only once you are close
+    // enough to hear him. Out of earshot the clock does not even run.
+    if (this.earshot > 0 && --this.talkTimer <= 0) {
       this.talkTimer = 200 + this.phase * 90;
       if (p.state === 'play') this.say('threat');
     }

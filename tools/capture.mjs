@@ -125,7 +125,7 @@ const fail = (msg) => { failures++; console.log(`  FAIL ${msg}`); };
 const guard = (label, fn) => { try { return fn(); } catch (e) { fail(`${label}: ${e.message}`); return null; } };
 
 const SCRIPTS = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
-  .match(/<script src="([^"]+)"><\/script>/g).map((t) => t.match(/src="([^"]+)"/)[1]);
+  .match(/<script src="([^"]+)"><\/script>/g).map((t) => t.match(/src="([^"]+)"/)[1].split('?')[0]);
 for (const src of SCRIPTS) guard(`loading ${src}`, () => vm.runInContext(fs.readFileSync(path.join(root, src), 'utf8'), scope, { filename: src }));
 vm.runInContext('this.api = { Game, Input, Sound, LEVELS, Enemy, Npc, ParkedRide };', scope);
 const { Game, Input, LEVELS } = scope.api;

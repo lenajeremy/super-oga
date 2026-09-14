@@ -27,7 +27,7 @@ scope.AudioContext=class{constructor(){this.sampleRate=44100;this.currentTime=0;
   createGain(){return an();}createOscillator(){return an();}createBiquadFilter(){return an();}createBufferSource(){return an();}
   createConvolver(){return an();}createDynamicsCompressor(){return an();}createBuffer(c,l){return{getChannelData:()=>new Float32Array(l)};}resume(){}suspend(){}};
 vm.createContext(scope);
-for (const src of fs.readFileSync(root+'/index.html','utf8').match(/<script src="([^"]+)"><\/script>/g).map(t=>t.match(/src="([^"]+)"/)[1]))
+for (const src of fs.readFileSync(root+'/index.html','utf8').match(/<script src="([^"]+)"><\/script>/g).map(t=>t.match(/src="([^"]+)"/)[1].split('?')[0]))
   vm.runInContext(fs.readFileSync(path.join(root,src),'utf8'),scope,{filename:src});
 vm.runInContext('this.api={Game,Input,LEVELS};',scope);
 const {Game,Input}=scope.api;
