@@ -1092,8 +1092,7 @@ class Boss extends Enemy {
     this.jumpTimer = 260;
     this.talkTimer = 90;
     this.stunned = 0;
-    this.threats = [...FASHE_THREATS];
-    this.said = 0;
+    this.said = Math.floor(Math.random() * FASHE_THREATS.length);
   }
 
   // 3 while he is fresh, 2 in the middle, 1 when he is nearly done - so he speeds up.
@@ -1101,12 +1100,18 @@ class Boss extends Enemy {
     return this.hp > this.maxHp * 0.66 ? 3 : this.hp > this.maxHp * 0.33 ? 2 : 1;
   }
 
-  say(lines, colour = '#e3412f') {
-    const line = lines === this.threats
-      ? this.threats[this.said++ % this.threats.length]
-      : pick(lines);
-    this.world.float(line, this.cx, this.y - 14, colour);
-    Sound.speak('fashe', { vol: 0.85, fallback: { vowels: 'oa-e-ua', pitch: 96 } });
+  // Say one of his lines out loud, and show that same line. The clip ids come from
+  // tools/build-voices.mjs, which reads the very same arrays out of src/story.js - so
+  // what he says and what is drawn can never be different lines.
+  say(which = 'threat', colour = '#e3412f') {
+    const hurt = which === 'hurt';
+    const lines = hurt ? FASHE_HURT : FASHE_THREATS;
+    const i = hurt ? Math.floor(Math.random() * lines.length) : this.said++ % lines.length;
+    this.world.float(lines[i], this.cx, this.y - 14, colour);
+    Sound.speak(`${hurt ? 'fashe_h' : 'fashe_t'}${i}`, {
+      vol: 0.9,
+      fallback: { vowels: hurt ? 'a-o' : 'oa-e-ua', pitch: 96 },
+    });
   }
 
   update() {
@@ -1126,7 +1131,7 @@ class Boss extends Enemy {
     // Taunts on a timer, and faster the angrier he gets.
     if (--this.talkTimer <= 0) {
       this.talkTimer = 200 + this.phase * 90;
-      if (p.state === 'play') this.say(this.threats);
+      if (p.state === 'play') this.say('threat');
     }
 
     // A leap that carries him across the deck and lands hard.
@@ -1174,7 +1179,7 @@ class Boss extends Enemy {
     this.leaping = false;
     Sound.play('bossHit');
     if (text) this.world.float(text, this.cx, this.y - 14, '#ffcd3a');
-    else if (Math.random() < 0.5) this.say(FASHE_HURT, '#ffcd3a');
+    else if (Math.random() < 0.5) this.say('hurt', '#ffcd3a');
   }
 
   defeat() {

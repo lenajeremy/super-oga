@@ -31,8 +31,8 @@ sc.AudioContext=class{constructor(){this.sampleRate=44100;this.currentTime=0;thi
 vm.createContext(sc);
 for(const src of fs.readFileSync(root+'/index.html','utf8').match(/<script src="([^"]+)"><\/script>/g).map(t=>t.match(/src="([^"]+)"/)[1]))
  vm.runInContext(fs.readFileSync(path.join(root,src),'utf8'),sc,{filename:src});
-vm.runInContext('this.api={Game,Input,LEVELS,Spring,Boss,SecretExit,Rat};',sc);
-const {Game,Input,LEVELS}=sc.api;
+vm.runInContext('this.api={Game,Input,LEVELS,Spring,Boss,SecretExit,Rat,FASHE_THREATS,Sound};',sc);
+const {Game,Input,LEVELS,FASHE_THREATS,Sound}=sc.api;
 await new Promise(r=>setTimeout(r,250));
 const press=(...c)=>{Input.keys.clear();c.forEach(k=>Input.keys.add(k));};
 const tick=(n=1)=>{for(let i=0;i<n;i++)Game.update();};
@@ -161,6 +161,31 @@ const ok=(label,pass,extra='')=>{ if(!pass)failures++; console.log('  '+(pass?'o
     for(let f=0;f<10;f++){press();tick(1);}
     ok('the exit opens once he is down', goal.reached||Game.state==='clear', 'state='+Game.state);
   }
+}
+
+// 6b. what Fashe says out loud must be the line on screen - he used to shout the
+// robbery line from 1-3 on every single taunt, in a stage where it makes no sense.
+{
+  Game.levelIndex=4; Game.beginPlay(); tick(3);
+  Game.cheat=true;
+  const w=Game.world, boss=w.boss;
+  const spoken=[];
+  const realSpeak=Sound.speak;
+  Sound.speak=(id)=>spoken.push(id);
+  let matched=0, wrongStage=0;
+  for(let n=0;n<6;n++){
+    boss.talkTimer=1; spoken.length=0;
+    tick(3);
+    const shown=w.texts[w.texts.length-1];
+    const id=spoken[0]||'';
+    if(id==='fashe') wrongStage++;
+    const idx=id.startsWith('fashe_t')?Number(id.slice(7)):-1;
+    if(idx>=0 && shown && FASHE_THREATS[idx]===shown.text) matched++;
+    tick(30);
+  }
+  Sound.speak=realSpeak;
+  ok('every threat he speaks is the one drawn on screen', matched===6, matched+'/6 matched');
+  ok('and the 1-3 robbery line never plays in 2-2', wrongStage===0, wrongStage+' wrong clips');
 }
 
 // 7. punching

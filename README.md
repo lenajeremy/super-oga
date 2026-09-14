@@ -48,6 +48,11 @@ an option and right to confirm, so the whole game can be played one-handed on th
 Touch controls and gamepads work as well; the ENTER / COMOT buttons appear only when
 there is something to enter or comot from.
 
+`?stage=2-2` (or `?stage=5`) drops you straight into a stage, with the money, form and
+aso-ebi you would plausibly have arrived carrying - useful for looking at one part without
+replaying everything before it. The HUD says JUMPED IN so it is never mistaken for a real
+run, and with no parameter the game starts normally at the title.
+
 You start with five lives. Opening the game as `http://localhost:5055/?cheat` begins in
 cheat mode, where a hit, a gutter, the lagoon and the clock all leave Oga standing - he is
 simply put back on the last solid ground he stood on. **I** toggles it at any point, and

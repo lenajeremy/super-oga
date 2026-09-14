@@ -19,6 +19,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -59,6 +60,20 @@ const CAST = {
   fashe:   { yarngpt: 'Tayo',     say: ['Rocko', 182, 28] },   // the one-chance conductor
 };
 
+// Fashe's fight dialogue is read straight out of src/story.js rather than copied here,
+// so the line he says can never drift from the line drawn on screen.
+function faheLines() {
+  const scope = {};
+  const src = fs.readFileSync(path.join(root, 'src/story.js'), 'utf8');
+  const grab = (name) => src.slice(src.indexOf(`const ${name} = [`), src.indexOf('];', src.indexOf(`const ${name} = [`)) + 2);
+  vm.runInNewContext(`${grab('FASHE_THREATS')}${grab('FASHE_HURT')};this.t = FASHE_THREATS; this.h = FASHE_HURT;`, scope);
+  const tidy = (line) => line.charAt(0) + line.slice(1).toLowerCase();
+  return {
+    ...Object.fromEntries(scope.t.map((line, i) => [`fashe_t${i}`, ['fashe', tidy(line)]])),
+    ...Object.fromEntries(scope.h.map((line, i) => [`fashe_h${i}`, ['fashe', tidy(line)]])),
+  };
+}
+
 // id -> [speaker, line]. The id is what src/entities.js and the market ambience ask for.
 const LINES = {
   suya: ['sule', 'Suya! Come buy suya! E sweet die!'],
@@ -73,6 +88,7 @@ const LINES = {
   market1: ['adaora', 'Come buy something! Customer, come!'],
   market2: ['sule', 'Fine fine things dey here! Come look!'],
   market3: ['sikirat', 'Buy your own! E remain small!'],
+  ...faheLines(),
 };
 
 // YarnGPT hands back audio that stops dead on the last phoneme, with no decay, which

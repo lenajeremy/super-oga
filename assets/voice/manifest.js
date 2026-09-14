@@ -71,5 +71,89 @@ window.VOICE_CLIPS = {
     "text": "Buy your own! E remain small!",
     "voice": "Wura",
     "speaker": "sikirat"
+  },
+  "fashe_t0": {
+    "src": "assets/voice/fashe_t0.m4a",
+    "text": "You follow me come makoko? you get liver.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t1": {
+    "src": "assets/voice/fashe_t1.m4a",
+    "text": "This water deep. nobody go hear you shout.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t2": {
+    "src": "assets/voice/fashe_t2.m4a",
+    "text": "I dey collect from people like you every single day.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t3": {
+    "src": "assets/voice/fashe_t3.m4a",
+    "text": "The cloth na my own now. go buy your own aso-ebi.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t4": {
+    "src": "assets/voice/fashe_t4.m4a",
+    "text": "You think say na only you dey hustle for this lagos?",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t5": {
+    "src": "assets/voice/fashe_t5.m4a",
+    "text": "One chance no dey do two chance. go home.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t6": {
+    "src": "assets/voice/fashe_t6.m4a",
+    "text": "Your wedding go start without you. i go send picture.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t7": {
+    "src": "assets/voice/fashe_t7.m4a",
+    "text": "I don throw bigger man comot moving bus.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t8": {
+    "src": "assets/voice/fashe_t8.m4a",
+    "text": "Stand still. e go pain less that way.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_t9": {
+    "src": "assets/voice/fashe_t9.m4a",
+    "text": "Na your own cloth i go use wrap you.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_h0": {
+    "src": "assets/voice/fashe_h0.m4a",
+    "text": "Ah! my body!",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_h1": {
+    "src": "assets/voice/fashe_h1.m4a",
+    "text": "Na luck be that!",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_h2": {
+    "src": "assets/voice/fashe_h2.m4a",
+    "text": "You dey try... small.",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
+  "fashe_h3": {
+    "src": "assets/voice/fashe_h3.m4a",
+    "text": "Hold on. hold on.",
+    "voice": "Tayo",
+    "speaker": "fashe"
   }
 };

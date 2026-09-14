@@ -47,6 +47,17 @@ const Game = {
   // Cheat mode: nothing can kill Oga. Off unless the page is opened with ?cheat,
   // and toggled any time with I, so an ordinary game is never affected.
   cheat: typeof location !== 'undefined' && /[?&]cheat\b/.test(location.search || ''),
+  // ?stage=2-2 jumps straight to a stage, for looking at one bit without replaying the
+  // five before it. Ordinary play is untouched: with no parameter this stays null.
+  startAt: (() => {
+    const m = typeof location !== 'undefined' && /[?&]stage=([\w-]+)/.exec(location.search || '');
+    if (!m) return null;
+    const want = m[1].toLowerCase();
+    const byId = LEVELS.findIndex((l) => l.id.toLowerCase() === want);
+    if (byId >= 0) return byId;
+    const n = Number(want);
+    return Number.isFinite(n) && n >= 1 && n <= LEVELS.length ? n - 1 : null;
+  })(),
   hiscore: Store.get('hiscore', 0),
 
   boot() {
@@ -61,7 +72,7 @@ const Game = {
     Input.init(() => Sound.unlock());
     requestAnimationFrame((t) => this.frame(t));
     Assets.load((p) => (this.progress = p))
-      .then(() => this.setState('title'))
+      .then(() => (this.startAt === null ? this.setState('title') : this.jumpToStage(this.startAt)))
       .catch((err) => {
         console.error(err);
         this.error = err;
@@ -161,6 +172,28 @@ const Game = {
       this.storyChars = 0;
       if (this.storyIndex >= PROLOGUE.length) this.startLevel(false);
     }
+  },
+
+  // Drop straight into a stage with the state you would plausibly have arrived with:
+  // enough money to trade, Big Oga if you are past the opening, and the aso-ebi in hand
+  // only where the story says you are carrying it.
+  jumpToStage(index) {
+    const id = LEVELS[index].id;
+    const carrying = ['1-3', '2-3'].includes(id);
+    Object.assign(this, {
+      levelIndex: index,
+      lives: STARTING_LIVES,
+      score: 0,
+      naira: 600,
+      aso: carrying,
+      asoPieces: carrying ? 25 : 0,
+      coinsFound: 0,
+      reputation: 0,
+      form: index > 0 ? 'big' : 'small',
+      storyIndex: 0,
+      storyChars: 0,
+    });
+    this.startLevel(false);
   },
 
   startLevel(fromCheckpoint) {
@@ -531,6 +564,7 @@ const Game = {
       drawText(ctx, `${label} ${secs}`, 284, 13, { color: secs <= 3 && this.world.frame % 16 < 8 ? '#e3412f' : '#63d68f' });
     }
     if (this.cheat) drawText(ctx, 'CHEAT', 196, 21, { align: 'center', color: '#63d68f' });
+    if (this.startAt !== null) drawText(ctx, 'JUMPED IN', 8, 21, { color: '#86d7ff' });
     drawText(ctx, 'TIME', VIEW_W - 8, 4, { align: 'right' });
     const warn = this.hurry && Math.floor(this.world.frame / 16) % 2 === 0;
     drawText(ctx, String(this.time).padStart(3, '0'), VIEW_W - 8, 13, { align: 'right', color: warn ? '#e3412f' : '#f8f4ea' });
