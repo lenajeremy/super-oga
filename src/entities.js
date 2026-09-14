@@ -67,7 +67,7 @@ class Player extends Entity {
     super(world, x, bottom - 20, 10, 20);
     Object.assign(this, {
       form: 'small', state: 'play', invuln: 0, odogwu: 0, coyote: 0, jumpBuffer: 0, freeze: 0, throwTimer: 0,
-      anim: 0, crouching: false, skidding: false, climbing: false, swimming: false, strokeTimer: 0, springLift: 0, ride: null, deathTimer: 0, cause: null, vehicle: null, mountCooldown: 0,
+      anim: 0, crouching: false, skidding: false, climbing: false, swimming: false, strokeTimer: 0, springLift: 0, punchTimer: 0, punchCooldown: 0, ride: null, deathTimer: 0, cause: null, vehicle: null, mountCooldown: 0,
     });
     this.prevBottom = this.bottom;
     // Last spot Oga stood on solid ground - where cheat mode puts him back.
@@ -180,6 +180,29 @@ class Player extends Entity {
     this.world.shake = 4;
     Sound.play('bump');
     this.world.float(`KEKE DON DENT! ${v.hp} MORE KNOCK`, this.cx, this.y - 10, '#ffcd3a');
+  }
+
+  // A straight jab. Short reach, but it staggers anything it lands on - and it is the
+  // only way to fight something too big to stomp.
+  punch() {
+    this.punchTimer = 12;
+    this.punchCooldown = 20;
+    Sound.play('punch');
+    const reach = {
+      x: this.facing > 0 ? this.x + this.w - 2 : this.x - 16,
+      y: this.y + this.h * 0.25,
+      w: 18,
+      h: this.h * 0.5,
+    };
+    this.world.particles.push(new Particle(reach.x + (this.facing > 0 ? 6 : 0), reach.y + 2, { life: 10, frames: ['sparkle1', 'sparkle2'], rate: 5 }));
+    let landed = false;
+    for (const e of this.world.entities) {
+      if (e.dead || !(e instanceof Enemy) || !e.alive || !overlaps(reach, e)) continue;
+      landed = true;
+      if (e.punched) e.punched(this);
+      else e.knockOut('GBOSA!');
+    }
+    if (landed) this.world.shake = 3;
   }
 
   hurt() {
@@ -414,6 +437,8 @@ class Player extends Entity {
     const light = Input.down.jump || this.springLift > 0;
     this.vy = Math.min(this.vy + (rising ? (light ? 0.23 : 0.62) : 0.5), 5.8);
 
+    // The run button, tapped: horn on a ride, sachet with pure water, otherwise a punch.
+    // Held, it is still run - the same split Mario uses for run and fire.
     if (ride && Input.pressed.run) {
       Sound.play('horn');
       world.float('PIM PIM!', this.cx + this.facing * 16, this.y - 4, '#ffcd3a');
@@ -421,7 +446,11 @@ class Player extends Entity {
       world.add(new Sachet(world, this.cx + this.facing * 6 - 3, this.y + 8, this.facing));
       this.throwTimer = 12;
       Sound.play('throw');
+    } else if (!ride && Input.pressed.run && this.punchCooldown === 0) {
+      this.punch();
     }
+    if (this.punchCooldown > 0) this.punchCooldown--;
+    if (this.punchTimer > 0) this.punchTimer--;
 
     this.prevBottom = this.bottom;
     if (world.moveX(this, this.vx)) this.vx = 0;
@@ -492,6 +521,7 @@ class Player extends Entity {
     else if (this.crouching) pose = 'crouch';
     else if (!this.onGround) pose = 'jump';
     else if (this.skidding) pose = 'skid';
+    else if (this.punchTimer > 6) pose = this.big ? 'throw' : 'walk2';
     else if (this.throwTimer > 0 && this.big) pose = 'throw';
     else if (Math.abs(this.vx) > 0.15) pose = Math.floor(this.anim) % 2 ? 'walk2' : 'walk1';
     const name = pose === 'dead' ? 's_dead' : `${this.big ? 'b' : 's'}_${pose}${variant}`;
@@ -1040,16 +1070,36 @@ class Okada extends Enemy {
   }
 }
 
-// Mario's boss, as the man who robbed you. Three stomps, and he throws what he stole.
+// Fashe. Twice the size of anybody else on the water, and the only thing in the game you
+// cannot simply stomp twice and walk away from. He paces, leaps the width of the deck,
+// throws what he stole, and talks the whole time. Stomps hurt him most, punches wear him
+// down, sachets sting. Twelve hits, over three tempers that each get faster.
 class Boss extends Enemy {
   constructor(world, x, y) {
-    super(world, x + 2, y - 5, 12, 21);
-    this.points = 2000;
-    this.hp = 3;
+    super(world, x - 5, y + TILE - 42, 22, 42);
+    this.points = 5000;
+    this.maxHp = 12;
+    this.hp = this.maxHp;
     this.alwaysActive = true;
-    this.throwTimer = 90;
-    this.home = this.x;
+    this.throwTimer = 150;
+    this.jumpTimer = 260;
+    this.talkTimer = 90;
     this.stunned = 0;
+    this.threats = [...FASHE_THREATS];
+    this.said = 0;
+  }
+
+  // 3 while he is fresh, 2 in the middle, 1 when he is nearly done - so he speeds up.
+  get phase() {
+    return this.hp > this.maxHp * 0.66 ? 3 : this.hp > this.maxHp * 0.33 ? 2 : 1;
+  }
+
+  say(lines, colour = '#e3412f') {
+    const line = lines === this.threats
+      ? this.threats[this.said++ % this.threats.length]
+      : pick(lines);
+    this.world.float(line, this.cx, this.y - 14, colour);
+    Sound.speak('fashe', { vol: 0.85, fallback: { vowels: 'oa-e-ua', pitch: 96 } });
   }
 
   update() {
@@ -1058,65 +1108,121 @@ class Boss extends Enemy {
       this.updateKO();
       return;
     }
+    const p = this.world.player;
     if (this.stunned > 0) {
       this.stunned--;
       this.fall();
       return;
     }
-    const p = this.world.player;
     this.facing = Math.sign(p.cx - this.cx) || this.facing;
-    // Paces around his patch and lobs things at you.
-    const speed = 0.6 + (3 - this.hp) * 0.45;
-    this.vx = Math.sign(Math.sin(this.t * 0.012)) * speed;
-    if (this.world.moveX(this, this.vx)) this.vx *= -1;
-    this.fall();
+
+    // Taunts on a timer, and faster the angrier he gets.
+    if (--this.talkTimer <= 0) {
+      this.talkTimer = 200 + this.phase * 90;
+      if (p.state === 'play') this.say(this.threats);
+    }
+
+    // A leap that carries him across the deck and lands hard.
+    if (this.onGround && --this.jumpTimer <= 0) {
+      this.jumpTimer = 150 + this.phase * 70;
+      this.vy = -7.2;
+      this.vx = this.facing * (1.5 + (3 - this.phase) * 0.5);
+      this.onGround = false;
+      this.leaping = true;
+    }
+
+    if (this.leaping) {
+      if (this.world.moveX(this, this.vx)) this.vx *= -1;
+      if (this.fall(0.4) === 1) {
+        this.leaping = false;
+        this.vx = 0;
+        this.world.shake = 10;
+        Sound.play('bossLand');
+        // The landing throws up a wave that catches you if you are on the ground.
+        if (p.state === 'play' && p.onGround && Math.abs(p.cx - this.cx) < 74) p.hurt();
+      }
+    } else {
+      const speed = 0.35 + (3 - this.phase) * 0.35;
+      this.vx = Math.sign(Math.sin(this.t * 0.011)) * speed;
+      if (this.world.moveX(this, this.vx)) this.vx *= -1;
+      this.fall();
+    }
+
     if (--this.throwTimer <= 0) {
-      this.throwTimer = Math.max(48, 110 - (3 - this.hp) * 24);
-      this.world.add(new BossThrow(this.world, this.cx - 4, this.y + 6, this.facing));
+      this.throwTimer = 60 + this.phase * 40;
+      this.world.add(new BossThrow(this.world, this.cx - 4, this.y + 10, this.facing));
       Sound.play('throw');
     }
   }
 
-  stomped(player) {
-    this.bounce(player);
-    if (--this.hp > 0) {
-      this.stunned = 45;
-      this.throwTimer = Math.max(this.throwTimer, 60);
-      Sound.play('bump');
-      this.world.shake = 6;
-      this.world.float(`${this.hp} MORE!`, this.cx, this.y - 10, '#ffcd3a');
+  wound(amount, text) {
+    if (!this.alive) return;
+    this.hp = Math.max(0, this.hp - amount);
+    this.world.shake = 6;
+    if (this.hp <= 0) {
+      this.defeat();
       return;
     }
-    this.knockOut('FASHE DON FALL!');
-    this.world.shake = 10;
-    this.world.game.say('FASHE DON SURRENDER! THE ASO-EBI NA YOUR OWN AGAIN!', '#63d68f');
-    this.world.game.aso = true;
-    this.world.game.asoPieces = 25;
+    this.stunned = 34;
+    this.leaping = false;
+    Sound.play('bossHit');
+    if (text) this.world.float(text, this.cx, this.y - 14, '#ffcd3a');
+    else if (Math.random() < 0.5) this.say(FASHE_HURT, '#ffcd3a');
+  }
+
+  defeat() {
+    this.state = 'ko';
+    this.vy = -4;
+    this.vx = -this.facing * 0.6;
+    this.world.shake = 14;
+    Sound.play('bossDown');
+    const game = this.world.game;
+    game.addScore(this.points, this.cx, this.y - 10, 'FASHE DON FALL!');
+    game.aso = true;
+    game.asoPieces = 25;
+    game.say('FASHE DON SURRENDER! THE ASO-EBI NA YOUR OWN AGAIN!', '#63d68f');
+    for (let i = 0; i < 10; i++) {
+      this.world.particles.push(new Particle(this.cx - 6 + rand(-16, 16), this.y + rand(0, 20), { vx: rand(-1.5, 1.5), vy: rand(-3, -1), gravity: 0.12, life: 60, frames: ['aso'] }));
+    }
+  }
+
+  // Too big to knock over with one jump: a stomp is worth two hits, a punch one.
+  stomped(player) {
+    this.bounce(player);
+    this.wound(2);
+  }
+
+  punched() {
+    this.wound(1);
   }
 
   hitBySachet() {
-    this.stomped(this.world.player);
+    this.wound(1, 'PURE WATER FOR YOUR HEAD!');
+  }
+
+  // Walking into him is like walking into a wall that hits back.
+  hitPlayer(player) {
+    player.hurt();
   }
 
   draw(ctx, camX) {
     if (this.stunned > 0 && (this.stunned >> 1) % 2 === 0) return;
-    const name = this.state === 'ko' ? 'fashe_talk' : (this.t >> 3) % 2 ? 'fashe_2' : 'fashe_1';
-    this.sprite(ctx, camX, 'people', name, { flipY: this.state === 'ko' });
-    if (this.alive) {
-      for (let i = 0; i < this.hp; i++) {
-        Assets.draw(ctx, 'items', 'aso', this.cx - camX - 18 + i * 13, this.y - 16);
-      }
-    }
+    let name = 'fashe_big1';
+    if (this.state === 'ko') name = 'fashe_fallen';
+    else if (this.stunned > 0) name = 'fashe_hurt';
+    else if (this.leaping) name = 'fashe_jump';
+    else if ((this.t >> 3) % 2) name = 'fashe_big2';
+    this.sprite(ctx, camX, 'people', name, { flipY: false });
   }
 }
 
 class BossThrow extends Entity {
   constructor(world, x, y, dir) {
     super(world, x, y, 8, 8);
-    this.vx = dir * 2.6;
-    this.vy = -1.5;
+    this.vx = dir * 2.9;
+    this.vy = -2;
     this.alwaysActive = true;
-    this.life = 200;
+    this.life = 220;
   }
 
   update() {
@@ -1393,6 +1499,7 @@ class Goal extends Entity {
     super(world, x, y + TILE - h, w, h);
     this.name = name;
     this.reached = false;
+    this.warned = 0;
   }
 
   update() {
@@ -1405,6 +1512,18 @@ class Goal extends Entity {
 
   touch(player) {
     if (this.reached || player.cx < this.x + Math.min(24, this.w / 3)) return;
+    // You do not walk past a man who took your family's cloth.
+    const boss = this.world.boss;
+    if (boss && boss.alive) {
+      if (this.warned < 1) {
+        this.warned = 1;
+        Sound.play('bump');
+        this.world.game.say('FASHE STILL DEY HOLD THE ASO-EBI. GO COLLECT AM FIRST!', '#e3412f');
+      }
+      this.world.moveX(player, -12);
+      player.vx = -1.5;
+      return;
+    }
     this.reached = true;
     // Mario's flagpole: reach it high and the bonus is bigger.
     const height = clamp((this.bottom - player.bottom) / this.h, 0, 1);

@@ -342,6 +342,22 @@ const Sound = {
         T(110, { type: 'sawtooth', dur: 0.5, vol: 0.07, slide: 230 });
         N({ dur: 0.5, vol: 0.05, filter: 'bandpass', freq: 900, q: 0.8, slide: 3000 });
         break;
+      case 'punch':
+        N({ dur: 0.07, vol: 0.2, filter: 'bandpass', freq: 900, q: 0.8, slide: 240 });
+        T(180, { type: 'square', dur: 0.06, vol: 0.1, slide: 90 });
+        break;
+      case 'bossHit':
+        N({ dur: 0.18, vol: 0.3, filter: 'lowpass', freq: 1800, slide: 300 });
+        T(140, { type: 'sine', dur: 0.22, vol: 0.34, slide: 48 });
+        break;
+      case 'bossLand':
+        T(90, { type: 'sine', dur: 0.3, vol: 0.4, slide: 34 });
+        N({ dur: 0.26, vol: 0.18, filter: 'lowpass', freq: 700, slide: 140 });
+        break;
+      case 'bossDown':
+        [220, 185, 147, 110].forEach((f, i) => T(f, { type: 'sawtooth', dur: 0.3, vol: 0.12, delay: i * 0.18, slide: f * 0.7 }));
+        N({ dur: 0.9, vol: 0.14, filter: 'lowpass', freq: 900, slide: 120, delay: 0.6 });
+        break;
       case 'stroke':
         N({ dur: 0.2, vol: 0.12, filter: 'lowpass', freq: 1400, slide: 380 });
         T(300, { type: 'sine', dur: 0.14, vol: 0.06, slide: 520 });

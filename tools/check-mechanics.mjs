@@ -108,26 +108,75 @@ const ok=(label,pass,extra='')=>{ if(!pass)failures++; console.log('  '+(pass?'o
   ok('and strokes carry you up', p.bottom < 11*16, 'ended at y='+Math.round(p.bottom));
   Game.cheat=true;
 }
-// 6. boss
+// 6. the boss: a real fight, not three taps
 {
   const w=Game.world,p=w.player;
-  const boss=w.entities.find(e=>e.constructor.name==='Boss');
-  if(!boss){ ok('boss exists',false); }
+  const boss=w.boss;
+  if(!boss){ ok('Fashe is waiting in 2-2',false); }
   else {
-    let hits=0;
-    for(let n=0;n<3;n++){
-      Object.assign(p,{state:'play',vx:0,vy:3,invuln:0,ride:null,vehicle:null,climbing:false});
-      p.setForm('small'); p.x=boss.cx-p.w/2; p.y=boss.y-p.h-8; p.prevBottom=p.bottom; p.onGround=false;
-      const hp0=boss.hp;
-      for(let f=0;f<40&&boss.hp===hp0&&boss.alive;f++){press();tick(1);}
-      if(boss.hp<hp0||!boss.alive) hits++;
-      boss.stunned=0;
-    }
-    ok('boss takes three stomps', hits===3&&!boss.alive, hits+' hits landed, alive='+boss.alive);
+    ok('Fashe is waiting in 2-2', true, boss.maxHp+' hits, '+Math.round(boss.w)+'x'+Math.round(boss.h)+'px');
+    ok('he is bigger than an ordinary person', boss.h >= 40, boss.h+'px tall vs a 21px hawker');
+
+    // the exit will not open while he stands
+    const goal=w.goal;
+    Object.assign(p,{state:'play',vx:0,vy:0,invuln:0,ride:null,vehicle:null,climbing:false,swimming:false});
+    p.setForm('small'); p.x=goal.x+goal.w/2; p.y=goal.bottom-p.h; p.onGround=true;
+    Game.aso=false;
+    for(let f=0;f<10;f++){press();tick(1);}
+    ok('the stage exit is barred until he falls', Game.state==='play'&&!goal.reached, 'state='+Game.state);
+
+    // he jumps
+    boss.jumpTimer=1; boss.stunned=0;
+    let airborne=0;
+    for(let f=0;f<120;f++){ tick(1); if(!boss.onGround) airborne++; }
+    ok('he leaps', airborne>10, airborne+' frames off the ground');
+
+    // he speaks
+    const said=w.texts.length; boss.talkTimer=1;
+    for(let f=0;f<10;f++) tick(1);
+    ok('he threatens you', w.texts.length>said, 'said: "'+(w.texts[w.texts.length-1]||{}).text+'"');
+
+    // punching wears him down; stomping hurts more
+    const full=boss.hp;
+    boss.stunned=0; boss.punched(); const afterPunch=boss.hp;
+    boss.stunned=0;
+    Object.assign(p,{state:'play',vx:0,vy:3,invuln:0,ride:null,vehicle:null});
+    p.x=boss.cx-p.w/2; p.y=boss.y-p.h-8; p.prevBottom=p.bottom; p.onGround=false;
+    for(let f=0;f<30&&boss.hp===afterPunch;f++){press();tick(1);}
+    ok('a punch takes one, a stomp takes two', full-afterPunch===1 && afterPunch-boss.hp===2,
+       'punch -'+(full-afterPunch)+', stomp -'+(afterPunch-boss.hp));
+
+    // and he does not fall in three
+    ok('he survives three hits', boss.hp>0, boss.hp+'/'+boss.maxHp+' left');
+
+    // finish him
+    let guard=0;
+    while(boss.alive && guard++<40){ boss.stunned=0; boss.punched(); }
+    ok('but he does go down', !boss.alive, 'took '+(boss.maxHp)+' hits worth');
     ok('and hands back the aso-ebi', Game.aso&&Game.asoPieces===25, 'pieces='+Game.asoPieces);
+
+    // now the exit opens
+    Object.assign(p,{state:'play',vx:0,vy:0,invuln:0,ride:null,vehicle:null});
+    p.x=goal.x+goal.w/2; p.y=goal.bottom-p.h; p.onGround=true;
+    for(let f=0;f<10;f++){press();tick(1);}
+    ok('the exit opens once he is down', goal.reached||Game.state==='clear', 'state='+Game.state);
   }
 }
-// 7. hundred-coin life
+
+// 7. punching
+{
+  Game.levelIndex=0; Game.beginPlay(); tick(3);
+  const w=Game.world,p=w.player;
+  const foe=w.entities.find(e=>e.constructor.name==='Rat'&&e.alive);
+  Object.assign(p,{state:'play',vx:0,vy:0,invuln:0,ride:null,vehicle:null,climbing:false,punchCooldown:0});
+  p.setForm('small');
+  p.x=foe.x-16; p.y=foe.bottom-p.h; p.onGround=true; p.facing=1; tick(2);
+  press('KeyX'); tick(1); press(); tick(3);
+  ok('you can punch what is in front of you', p.punchTimer>0||!foe.alive||foe.state!=='alive',
+     'punchTimer='+p.punchTimer+' foe='+foe.state);
+}
+
+// 8. hundred-coin life
 {
   Game.coinsFound=99; const lives=Game.lives; Game.addCoin();
   ok('a hundred coins is a life', Game.lives===lives+1);

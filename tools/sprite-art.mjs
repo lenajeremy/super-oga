@@ -9,12 +9,13 @@ import { uiFrames } from './art/ui.mjs';
 import { rideFrames } from './art/rides.mjs';
 import { peopleFrames } from './art/people.mjs';
 import { shopFrames } from './art/shops.mjs';
+import { bossFrames } from './art/boss.mjs';
 
 export function buildSheets() {
   return {
     hero: heroFrames(),
     rides: rideFrames(),
-    people: { ...peopleFrames(), ...shopFrames() },
+    people: { ...peopleFrames(), ...shopFrames(), ...bossFrames() },
     enemies: enemyFrames(),
     items: itemFrames(),
     tiles: tileFrames(),

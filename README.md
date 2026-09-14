@@ -35,7 +35,7 @@ from `file://`).
 | --- | --- |
 | **← →** | waka (walk) |
 | **Z** / **Space** | jump |
-| **X** | run, or throw a pure-water sachet |
+| **X** | run (held); tapped it punches, or throws a pure-water sachet |
 | **↑** | talk to somebody, buy, hire a ride |
 | **↓** | crouch, or comot from a ride |
 | **Enter** | start / continue · **Esc** pause · **M** gbedu on-off · **C** credits |
@@ -79,7 +79,8 @@ Mario's furniture is all here, wearing Lagos clothes: a foam mattress for a spri
 scaffolding to climb instead of vines, a manhole that drops you into an under-bridge coin
 stash and back, a flattened gutter rat that kicks like a shell, a shortcut that skips a
 whole stage, swimmable lagoon in Makoko, and Fashe waiting at the end of it as a boss who
-takes three stomps before he gives the cloth back. A hundred coins is still a life, and
+is a real fight: twelve hits, a life bar, leaps that shake the deck, and ten things he
+says while he does it. The stage exit stays shut until he is down. A hundred coins is still a life, and
 reaching a stage's end high still pays a bigger bonus.
 
 And every so often NEPA takes the light. The music ducks away, crickets and mosquitoes take

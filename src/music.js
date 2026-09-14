@@ -20,6 +20,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   // Two octaves of pentatonic, so a single digit reaches anywhere in the riff's range.
   const MINOR_PENT = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22];
+  // Blues scale: minor pentatonic with the flat five dropped in.
+  const BLUES = [0, 3, 5, 6, 7, 10, 12, 15, 17, 18];
   const MAJOR_PENT = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
   const DORIAN = [0, 2, 3, 5, 7, 9, 10, 12, 14, 15];
 
@@ -144,6 +146,42 @@
       horn:   { pattern: ['....7-5-4---....', '....5-4-2---....', '..7-5-4-2-------', '....4-5-7-9-----'], stack: [4, 7], vol: 0.14, octave: 12 },
     },
 
+    // The wedding band's first set: reggae. One-drop drums - nothing on beat one, the kick
+    // landing on three - with the guitar skanking the offbeats and the bass walking under.
+    reggae: {
+      bpm: 76, swing: 0.06, root: 45, bars: [0, 0, 5, 7], scale: MINOR_PENT,
+      drums: {
+        kick:   '........X.......',
+        snare:  '........x.......',
+        rim:    '....-.......-...',
+        shaker: '..x...x...x...x.',
+        conga:  '..............x.',
+        bell:   '............x...',
+      },
+      bass:   { scale: MINOR_PENT, octave: -12, pattern: '0---..3-5---..0.', vol: 0.34 },
+      // the skank: every offbeat, short and clipped
+      guitar: { pattern: '..4...4...4...4.', stack: [3, 7], vol: 0.075, dur: 0.07 },
+      keys:   { pattern: ['....2-..........', '................', '....3-..........', '....4-..2-......'], stack: [3, 7], vol: 0.05 },
+      horn:   { pattern: ['................', '........5-4-2---', '................', '....4-5-7-------'], stack: [4, 7], vol: 0.1, octave: 12 },
+    },
+
+    // And then the band drops into the blues. Shuffle feel, dominant sevenths, a walking
+    // bass and a lead that leans on the flat five.
+    blues: {
+      bpm: 88, swing: 0.34, root: 45, bars: [0, 5, 0, 7], scale: BLUES,
+      drums: {
+        kick:   'X.....x.X.....x.',
+        snare:  '....X.......X...',
+        rim:    '..-...-...-...-.',
+        shaker: 'x..x..x..x..x..x',
+        conga:  '..............x.',
+      },
+      bass:   { scale: BLUES, octave: -12, pattern: '0..2..4..5..4..2', vol: 0.32 },
+      guitar: { pattern: '5..6..7..5..3..0', stack: [4, 10], vol: 0.085, dur: 0.1 },
+      keys:   { pattern: ['0-..............', '................', '0-..............', '....5-..4-..0---'], stack: [4, 10], vol: 0.055 },
+      horn:   { pattern: ['....5-3-0-------', '................', '....7-5-3-------', '5-3-0-----------'], stack: [4, 10], vol: 0.11, octave: 12 },
+    },
+
     // Victory: everybody plays. Full horns, claps on the two and four, party tempo.
     odogwu: {
       bpm: 112, swing: 0.18, root: 48, bars: [0, 5, 3, 7], scale: MAJOR_PENT,
@@ -185,5 +223,5 @@
   const semitone = (scale, index) => scale[Math.min(index, scale.length - 1)];
   const freqOf = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
 
-  return { SONGS, MINOR_PENT, MAJOR_PENT, DORIAN, barsOf, patternAt, noteAt, holdLength, semitone, freqOf };
+  return { SONGS, MINOR_PENT, MAJOR_PENT, DORIAN, BLUES, barsOf, patternAt, noteAt, holdLength, semitone, freqOf };
 });

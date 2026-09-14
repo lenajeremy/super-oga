@@ -9,6 +9,8 @@ const DEATH_LINES = {
 };
 
 const STARTING_LIVES = 5;
+// How long the reggae runs at the wedding before the band drops into the blues.
+const REGGAE_SECONDS = 26;
 
 const Game = {
   state: 'loading', // loading | error | title | credits | story | intro | play | clear | gameover | victory
@@ -297,13 +299,18 @@ const Game = {
   },
 
   updateVictory() {
+    // The band plays out the ending: reggae first, then they drop into the blues.
+    if (Sound.ctx && this.stateTime === 150) Sound.startMusic('reggae');
+    if (Sound.ctx && this.stateTime === 150 + REGGAE_SECONDS * 60) {
+      Sound.startMusic('blues');
+      this.toast = { text: 'AND NOW... THE BLUES', t: 0 };
+    }
     if (this.stateTime % 3 === 0) {
       const frames = pick([['note1', 'note2'], ['sparkle1', 'sparkle2'], ['coin1', 'coin2', 'coin3', 'coin4']]);
       this.confetti.push(new Particle(rand(0, VIEW_W), -10, { vx: rand(-0.5, 0.5), vy: rand(0.6, 1.4), life: 260, frames, rate: 8 }));
     }
     for (const c of this.confetti) c.update();
     this.confetti = this.confetti.filter((c) => c.life > 0);
-    if (Sound.ctx && !Sound.song && this.stateTime > 150) Sound.startMusic('odogwu');
     if (this.stateTime > 120 && Input.confirm()) {
       Sound.stopMusic();
       this.setState('title');
@@ -385,6 +392,7 @@ const Game = {
       default:
         this.world.draw(ctx);
         this.drawHud(ctx);
+        this.drawBossBar(ctx);
         if (this.dialog) this.dialog.draw(ctx);
         else this.drawBanner(ctx);
         if (this.paused) this.drawPause(ctx);
@@ -528,6 +536,28 @@ const Game = {
     drawText(ctx, String(this.time).padStart(3, '0'), VIEW_W - 8, 13, { align: 'right', color: warn ? '#e3412f' : '#f8f4ea' });
   },
 
+  // Fashe's life bar, only while he is alive and on screen.
+  drawBossBar(ctx) {
+    const boss = this.world.boss;
+    if (!boss || !boss.alive || !this.world.nearCamera(boss, 120)) return;
+    const w = 180;
+    const x = (VIEW_W - w) / 2;
+    const y = 28;
+    drawText(ctx, 'FASHE', VIEW_W / 2, y - 9, { align: 'center', color: '#e3412f', outline: true });
+    this.shade(ctx, x - 2, y - 2, w + 4, 11, 0.75);
+    ctx.fillStyle = '#3a3142';
+    ctx.fillRect(x, y, w, 7);
+    const frac = boss.hp / boss.maxHp;
+    // green while he is fresh, gold in the middle, red when he is nearly finished
+    ctx.fillStyle = frac > 0.66 ? '#1f9d57' : frac > 0.33 ? '#ffcd3a' : '#e3412f';
+    ctx.fillRect(x, y, Math.max(1, Math.round(w * frac)), 7);
+    ctx.fillStyle = 'rgba(248, 244, 234, 0.35)';
+    ctx.fillRect(x, y, Math.max(1, Math.round(w * frac)), 2);
+    ctx.strokeStyle = '#f8f4ea';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 0.5, y - 0.5, w + 1, 8);
+  },
+
   drawBanner(ctx) {
     if (!this.banner) return;
     const lines = wrapText(this.banner.text, 300);
@@ -564,6 +594,8 @@ const Game = {
     const hop = Math.abs(Math.sin(this.stateTime * 0.08)) * 10;
     Assets.draw(ctx, 'people', 'bride_1', VIEW_W / 2 + 20, 158);
     Assets.draw(ctx, 'hero', Math.floor(this.stateTime / 30) % 2 ? 'b_jump_gold' : 'b_jump', VIEW_W / 2 - 16, 150 - hop);
+    const set = this.stateTime > 150 + REGGAE_SECONDS * 60 ? 'THE BAND DEY PLAY BLUES' : this.stateTime > 150 ? 'THE BAND DEY PLAY REGGAE' : '';
+    if (set) drawText(ctx, set, VIEW_W / 2, 136, { align: 'center', color: '#86d7ff', outline: true });
     if (this.stateTime > 120 && this.blink()) drawText(ctx, 'PRESS ENTER TO PLAY AGAIN', VIEW_W / 2, 200, { align: 'center', outline: true });
   },
 };
