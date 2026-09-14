@@ -56,6 +56,7 @@ const CAST = {
   danladi: { yarngpt: 'Jude',     say: ['Daniel', 205, 42] },  // Danladi, bus conductor
   scatter: { yarngpt: 'Osagie',   say: ['Rocko', 176, 32] },   // Agbero Scatter
   adaora:  { yarngpt: 'Adaora',   say: ['Tessa', 170, 56] },   // a trader across the market
+  fashe:   { yarngpt: 'Tayo',     say: ['Rocko', 182, 28] },   // the one-chance conductor
 };
 
 // id -> [speaker, line]. The id is what src/entities.js and the market ambience ask for.
@@ -68,6 +69,7 @@ const LINES = {
   kekeman: ['musa', 'Keke Maruwa dey! Enter with your change!'],
   conductor: ['danladi', 'Oshodi! Balogun! Enter with your change o!'],
   agbero: ['scatter', 'Oga! Stop there! Where your ticket?'],
+  fashe: ['fashe', 'Oga! Na one chance you enter! Drop everything!'],
   market1: ['adaora', 'Come buy something! Customer, come!'],
   market2: ['sule', 'Fine fine things dey here! Come look!'],
   market3: ['sikirat', 'Buy your own! E remain small!'],

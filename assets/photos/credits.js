@@ -33,6 +33,30 @@ window.PHOTO_CREDITS = [
     "license": "Pexels License"
   },
   {
+    "name": "bg_ojuelegba",
+    "title": "Time lapse photography of cars on the road during nighttime",
+    "author": "Okayimagery",
+    "page": "https://www.pexels.com/photo/time-lapse-photography-of-cars-on-the-road-during-nighttime-12904000/",
+    "use": "Stage 1-4 backdrop",
+    "license": "Pexels License"
+  },
+  {
+    "name": "bg_makoko",
+    "title": "Vivid street view of Makoko's floating community in Lagos",
+    "author": "Dosu Relief Foundation",
+    "page": "https://www.pexels.com/photo/an-hardworking-little-girl-27571399/",
+    "use": "Stage 1-5 backdrop",
+    "license": "Pexels License"
+  },
+  {
+    "name": "bg_island",
+    "title": "Street scene with yellow bus in Lagos, Nigeria",
+    "author": "Kenechukwu Emmanuel",
+    "page": "https://www.pexels.com/photo/street-scene-with-yellow-bus-in-lagos-nigeria-35894835/",
+    "use": "Stage 1-6 backdrop",
+    "license": "Pexels License"
+  },
+  {
     "name": "victory_sunset",
     "title": "Skyline of Lagos at sunset captured from water",
     "author": "Fera",

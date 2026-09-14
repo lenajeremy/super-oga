@@ -45,6 +45,24 @@ const PHOTOS = [
     size: [480, 224], position: 'top',
   },
   {
+    name: 'bg_ojuelegba', id: 12904000, author: 'Okayimagery', use: 'Stage 1-4 backdrop',
+    title: 'Time lapse photography of cars on the road during nighttime',
+    page: 'https://www.pexels.com/photo/time-lapse-photography-of-cars-on-the-road-during-nighttime-12904000/',
+    size: [480, 224], position: 'centre',
+  },
+  {
+    name: 'bg_makoko', id: 27571399, author: 'Dosu Relief Foundation', use: 'Stage 1-5 backdrop',
+    title: "Vivid street view of Makoko's floating community in Lagos",
+    page: 'https://www.pexels.com/photo/an-hardworking-little-girl-27571399/',
+    size: [480, 224], position: 'centre',
+  },
+  {
+    name: 'bg_island', id: 35894835, author: 'Kenechukwu Emmanuel', use: 'Stage 1-6 backdrop',
+    title: 'Street scene with yellow bus in Lagos, Nigeria',
+    page: 'https://www.pexels.com/photo/street-scene-with-yellow-bus-in-lagos-nigeria-35894835/',
+    size: [480, 224], position: 'centre',
+  },
+  {
     name: 'victory_sunset', id: 36602313, author: 'Fera', use: 'Victory screen',
     title: 'Skyline of Lagos at sunset captured from water',
     page: 'https://www.pexels.com/photo/skyline-of-lagos-at-sunset-captured-from-water-36602313/',

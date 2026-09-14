@@ -12,6 +12,9 @@ Originals are in `assets/photos/original/`; the game uses resized copies from `a
 | Stage 1 backdrop | [People on the road](https://www.pexels.com/photo/people-on-the-road-11390779/) | Daniel Sikpi |
 | Stage 2 backdrop | [Bustling Lagos street market scene at sunset](https://www.pexels.com/photo/bustling-lagos-street-market-scene-at-sunset-30583818/) | Bamidele Olamilekan |
 | Stage 3 backdrop | [Modern Lagos skyline with watercraft in lagoon](https://www.pexels.com/photo/modern-lagos-skyline-with-watercraft-in-lagoon-37405043/) | Fawaz Onakoya |
+| Stage 1-4 backdrop | [Time lapse photography of cars on the road during nighttime](https://www.pexels.com/photo/time-lapse-photography-of-cars-on-the-road-during-nighttime-12904000/) | Okayimagery |
+| Stage 1-5 backdrop | [Vivid street view of Makoko's floating community in Lagos](https://www.pexels.com/photo/an-hardworking-little-girl-27571399/) | Dosu Relief Foundation |
+| Stage 1-6 backdrop | [Street scene with yellow bus in Lagos, Nigeria](https://www.pexels.com/photo/street-scene-with-yellow-bus-in-lagos-nigeria-35894835/) | Kenechukwu Emmanuel |
 | Victory screen | [Skyline of Lagos at sunset captured from water](https://www.pexels.com/photo/skyline-of-lagos-at-sunset-captured-from-water-36602313/) | Fera |
 | Jollof billboard | [Rice with fish and vegetables on a serving dish](https://www.pexels.com/photo/rice-with-fish-and-vegetables-on-a-serving-dish-13915043/) | Keesha's Kitchen |
 | Suya billboard | [Street vendor grilling meat skewers in Africa](https://www.pexels.com/photo/street-vendor-grilling-meat-skewers-in-africa-31120524/) | The Northern Lense |

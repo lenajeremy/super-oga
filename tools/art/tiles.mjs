@@ -53,6 +53,38 @@ function bridgeFill() {
   return p.rect(0, 15, T, 1, 'k');
 }
 
+// Makoko: plank walkways laid over the lagoon, on stilts.
+function deckTop() {
+  const p = new Pix(T, T).rect(0, 0, T, T, 'D');
+  p.rect(0, 0, T, 1, 'E').rect(0, 5, T, 1, 'd').rect(0, 6, T, 1, 'D').rect(0, 11, T, 1, 'd');
+  for (const x of [3, 11]) p.rect(x, 0, 1, 5, 'd');
+  for (const x of [7, 14]) p.rect(x, 6, 1, 5, 'd');
+  p.rect(0, 12, T, 4, 'd');
+  speckle(p, 0, 12, ['e', 'd'], 10, 41);
+  for (const [x, y] of [[2, 2], [9, 8], [13, 3]]) p.set(x, y, 'n');
+  return p;
+}
+
+function deckFill() {
+  // Under the boards: stilts going down into dark water.
+  const p = new Pix(T, T).rect(0, 0, T, T, 'b');
+  for (const x of [2, 3, 10, 11]) p.rect(x, 0, 1, T, x % 2 ? 'd' : 'D');
+  p.rect(0, 0, T, 1, 'd');
+  speckle(p, 2, T, ['B'], 5, 43);
+  return p;
+}
+
+// Lagos Island: old paving slabs over packed earth.
+function islandTop() {
+  const p = new Pix(T, T).rect(0, 0, T, T, 'd');
+  p.rect(0, 0, T, 7, 'N').rect(0, 0, T, 1, 'W');
+  p.rect(0, 3, T, 1, 'n').rect(5, 0, 1, 3, 'n').rect(11, 4, 1, 3, 'n');
+  p.rect(0, 7, T, 1, 'k');
+  speckle(p, 8, T, ['D', 'k'], 12, 47);
+  for (const [x, y] of [[2, 1], [9, 5], [13, 1]]) p.set(x, y, 'w');
+  return p;
+}
+
 function block() {
   // Sandcrete cement block: breakable when you're Big Oga.
   const p = speckle(new Pix(T, T).rect(0, 0, T, T, 'N'), 0, T, ['n', 'w'], 12, 21);
@@ -142,6 +174,10 @@ export function tileFrames() {
     street_top: streetTop(),
     street_fill: laterite(new Pix(T, T), 0, 11),
     market_top: marketTop(),
+    deck_top: deckTop(),
+    deck_fill: deckFill(),
+    island_top: islandTop(),
+    island_fill: speckle(new Pix(T, T).rect(0, 0, T, T, 'd'), 0, T, ['D', 'k', 'd'], 14, 53),
     market_fill: speckle(new Pix(T, T).rect(0, 0, T, T, 'D'), 0, T, ['d', 'e', 'd'], 16, 17),
     bridge_top: bridgeTop(),
     bridge_fill: bridgeFill(),

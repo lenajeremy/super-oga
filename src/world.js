@@ -451,6 +451,11 @@ class World {
       const color = t.t > 40 && t.t % 4 < 2 ? '#a8a2b4' : t.color;
       drawText(ctx, t.text, t.x - camX, t.y, { color, align: 'center', outline: true });
     }
+    // Night stages sit under a wash; the NEPA blackout then goes on top of that.
+    if (this.theme.dark) {
+      ctx.fillStyle = `rgba(8, 8, 28, ${this.theme.dark})`;
+      ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    }
     this.drawBlackout(ctx, camX);
     const target = this.player.state === 'play' && !this.game.dialog && this.interactable(this.player);
     if (target) {

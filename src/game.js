@@ -18,6 +18,8 @@ const Game = {
   lives: 5,
   score: 0,
   naira: 100,
+  // Is Tunde carrying the family cloth? The whole story is this flag changing hands.
+  aso: false,
   time: 0,
   timeTick: 0,
   form: 'small',
@@ -131,7 +133,7 @@ const Game = {
     } else if (this.stateTime > 20 && Input.confirm()) {
       Sound.unlock();
       Sound.play('select');
-      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, form: 'small', storyIndex: 0, storyChars: 0 });
+      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, aso: false, form: 'small', storyIndex: 0, storyChars: 0 });
       this.setState('story');
     }
   },
@@ -472,6 +474,7 @@ const Game = {
     Assets.draw(ctx, 'hero', 'icon_head', VIEW_W / 2 - 40, 80);
     drawText(ctx, `× ${this.lives}`, VIEW_W / 2 - 20, 83);
     drawText(ctx, `₦${this.naira}`, VIEW_W / 2 + 14, 83, { color: '#ffcd3a' });
+    if (this.aso) drawText(ctx, 'CARRYING THE ASO-EBI', VIEW_W / 2, 94, { align: 'center', color: '#63d68f' });
     this.centered(ctx, wrapText(level.story, 340), 106);
     this.centered(ctx, wrapText(`TIP: ${level.tip}`, 340), 146, { color: '#a8a2b4' });
     if (this.fromCheckpoint) drawText(ctx, 'YOU GO START FROM THE BUS STOP', VIEW_W / 2, 186, { align: 'center', color: '#63d68f' });
@@ -488,8 +491,9 @@ const Game = {
     drawText(ctx, LEVELS[this.levelIndex].id, 196, 13, { align: 'center' });
     Assets.draw(ctx, 'hero', 'icon_head', 236, 6);
     drawText(ctx, `×${this.lives}`, 254, 9);
+    if (this.aso) drawText(ctx, 'ASO-EBI', 284, 4, { color: '#ffcd3a' });
     const ride = this.world.player.vehicle;
-    if (ride) drawText(ctx, ride.kind === 'keke' ? `KEKE ${'♥'.repeat(ride.hp)}` : 'OKADA', 284, 9, { color: '#63d68f' });
+    if (ride) drawText(ctx, ride.kind === 'keke' ? `KEKE ${'♥'.repeat(ride.hp)}` : 'OKADA', 284, 13, { color: '#63d68f' });
     if (this.cheat) drawText(ctx, 'CHEAT', 196, 21, { align: 'center', color: '#63d68f' });
     drawText(ctx, 'TIME', VIEW_W - 8, 4, { align: 'right' });
     const warn = this.hurry && Math.floor(this.world.frame / 16) % 2 === 0;

@@ -48,6 +48,12 @@ window.VOICE_CLIPS = {
     "voice": "Osagie",
     "speaker": "scatter"
   },
+  "fashe": {
+    "src": "assets/voice/fashe.mp3",
+    "text": "Oga! Na one chance you enter! Drop everything!",
+    "voice": "Tayo",
+    "speaker": "fashe"
+  },
   "market1": {
     "src": "assets/voice/market1.mp3",
     "text": "Come buy something! Customer, come!",

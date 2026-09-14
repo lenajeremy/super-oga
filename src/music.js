@@ -93,6 +93,57 @@
       horn:   { pattern: ['................', '................', '................', '........7-5-3---'], stack: [4, 7], vol: 0.115, octave: 12 },
     },
 
+    // Stage 1-4 Ojuelegba at night: slow, minor, mostly percussion and space.
+    ojuelegba: {
+      bpm: 92, swing: 0.2, root: 43, bars: [0, 0, 3, 5], scale: MINOR_PENT,
+      drums: {
+        kick:   'X......x..X.....',
+        snare:  '....X.......X...',
+        rim:    '..-.x..-..x.-..x',
+        shaker: '..x...x...x...x.',
+        conga:  '......x.....x..x',
+        bell:   'x.....x...x.....',
+      },
+      bass:   { scale: MINOR_PENT, octave: -12, pattern: '0-------3---0---', vol: 0.3 },
+      guitar: { pattern: ['....4...2.......', '................', '....5...4...2...', '................'], vol: 0.1, dur: 0.14, soft: true },
+      keys:   { pattern: ['0---............', '........3---....', '................', '2---........0---'], stack: [3, 7], vol: 0.07 },
+      horn:   { pattern: ['................', '................', '................', '........4-2-0---'], stack: [3, 7], vol: 0.1, octave: 12 },
+    },
+
+    // Stage 1-5 Makoko: wooden and watery - log drum, rim, almost no metal.
+    makoko: {
+      bpm: 100, swing: 0.14, root: 45, bars: [0, 3, 5, 3], scale: DORIAN,
+      drums: {
+        kick:   'X.....X...X.....',
+        snare:  '........x.......',
+        rim:    'x.x.x.x.x.x.x.x.',
+        shaker: '....x.......x...',
+        conga:  '..x..x..x..x..x.',
+      },
+      log:    { scale: DORIAN, octave: -12, pattern: 'X.....X...X.....', riff: '0.....3...5.....', vol: 0.32 },
+      guitar: { pattern: '..5.4...5.7.4...', vol: 0.1, dur: 0.12, soft: true },
+      keys:   { pattern: ['....2-0-........', '................', '....3-2-........', '................'], stack: [3, 7], vol: 0.065 },
+      horn:   { pattern: ['................', '................', '................', '....5-4-2-------'], stack: [4, 7], vol: 0.09, octave: 12 },
+    },
+
+    // Stage 1-6 Lagos Island: the party is close. Fast, bright, full highlife.
+    island: {
+      bpm: 124, swing: 0.16, root: 48, bars: [0, 5, 7, 4], scale: MAJOR_PENT,
+      drums: {
+        kick:   'X..x..X.X..x..x.',
+        snare:  '....X.......X..x',
+        clap:   '....X.......X...',
+        rim:    '..x.-.x...x.-.x.',
+        shaker: 'xXxXxXxXxXxXxXxX',
+        conga:  'x.x.x..x.x.x..x.',
+        bell:   'x..x..x...x.x...',
+      },
+      bass:   { scale: MAJOR_PENT, octave: -12, pattern: '0.0.4.2.0.4.5.4.', vol: 0.29 },
+      guitar: { pattern: '7.5.4.5.7.9.7.5.', vol: 0.125, dur: 0.085 },
+      keys:   { pattern: '..4-..2-..4-..7-', stack: [4, 7], vol: 0.075 },
+      horn:   { pattern: ['....7-5-4---....', '....5-4-2---....', '..7-5-4-2-------', '....4-5-7-9-----'], stack: [4, 7], vol: 0.14, octave: 12 },
+    },
+
     // Victory: everybody plays. Full horns, claps on the two and four, party tempo.
     odogwu: {
       bpm: 112, swing: 0.18, root: 48, bars: [0, 5, 3, 7], scale: MAJOR_PENT,

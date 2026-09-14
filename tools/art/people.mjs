@@ -43,6 +43,10 @@ const DARK = { S: '#6b3f23', s: '#4a2a17' };
 const LIGHT = { S: '#a86b40', s: '#7a4a2a' };
 
 export const PEOPLE = {
+  // Act two: the man who knows everybody, the woman on the water, and the one who robbed you.
+  risi: { hat: 'cap', body: 'shirt', pal: { H: 'D', h: 'd', C: 'E', J: 'D', T: 'k', t: 'z', ...DARK } },
+  ebun: { hat: 'gele', body: 'dress', pal: { H: 'c', h: 'B', J: 'W', C: 'B', c: 'b', j: 'c', ...DARK } },
+  fashe: { hat: 'cap', body: 'shirt', pal: { H: 'r', h: 'K', C: 'k', J: 'R', T: 'k', t: 'K', ...DARK } },
   suya: { hat: 'kufi', body: 'kaftan', pal: { H: 'W', h: 'w', J: 'G', C: 'W', c: 'w', ...DARK } },
   mamaput: { hat: 'gele', body: 'dress', apron: true, pal: { H: 'R', h: 'r', J: 'Y', C: 'O', c: 'E', j: 'r' } },
   nurse: { hat: 'nurse', body: 'dress', pal: { H: 'W', J: 'G', C: 'W', c: 'w', j: 'w', ...LIGHT } },

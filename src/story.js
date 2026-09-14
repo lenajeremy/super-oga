@@ -3,7 +3,8 @@
 
 const NAIRA_PER_COIN = 20;
 
-const PEOPLE_IDS = ['suya', 'mamaput', 'nurse', 'water', 'okadaman', 'kekeman', 'conductor', 'mum', 'tailor', 'bride'];
+const PEOPLE_IDS = ['suya', 'mamaput', 'nurse', 'water', 'okadaman', 'kekeman', 'conductor', 'mum', 'tailor', 'bride',
+  'risi', 'ebun', 'fashe'];
 const CAST = {
   tunde: { name: 'OGA TUNDE', sheet: 'hero', idle: 's_idle', talk: 's_idle' },
   agbero: { name: 'AGBERO SCATTER', sheet: 'enemies', idle: 'agbero_walk1', talk: 'agbero_walk2' },
@@ -11,6 +12,7 @@ const CAST = {
 const CAST_NAMES = {
   suya: 'MALLAM SULE', mamaput: 'MAMA NKECHI', nurse: 'NURSE BISI', water: 'IYA SIKIRAT', okadaman: 'BROS EMMY',
   kekeman: 'ALHAJI MUSA', conductor: 'DANLADI', mum: 'IYA RONKE', tailor: 'TAILOR KUNLE', bride: 'RONKE',
+  risi: 'BABA RISI', ebun: 'MAMA EBUN', fashe: 'THE CONDUCTOR',
 };
 for (const id of PEOPLE_IDS) CAST[id] = { name: CAST_NAMES[id], sheet: 'people', idle: `${id}_1`, talk: `${id}_talk` };
 
@@ -18,6 +20,7 @@ for (const id of PEOPLE_IDS) CAST[id] = { name: CAST_NAMES[id], sheet: 'people',
 const PROMPTS = {
   suya: 'BUY SUYA', mamaput: 'CHOP', nurse: 'CLINIC', water: 'BUY WATER', okadaman: 'HIRE OKADA',
   kekeman: 'HIRE KEKE', conductor: 'TALK', agbero: 'TALK', mum: 'TALK', tailor: 'TALK', bride: 'TALK',
+  risi: 'TALK', ebun: 'TALK', fashe: 'ENTER BUS',
 };
 
 // What people shout as you come near. `vowels` drives the formant voice in src/audio.js -
@@ -33,11 +36,12 @@ const CALLS = {
 };
 
 const PROLOGUE = [
-  'NA SATURDAY FOR EKO.',
+  'NA SATURDAY FOR EKO, AND THE WHOLE LAGOS DEY MOVE.',
   'OGA TUNDE COUSIN, RONKE, DEY MARRY TODAY FOR LAGOS ISLAND.',
-  'TUNDE PROMISE TO BRING THE FAMILY ASO-EBI... BUT HIM MOTOR DON KNOCK FOR OSHODI.',
-  'NO SHAKING. WITH HIM BEST AGBADA AND SMALL CHANGE FOR POCKET, TUNDE GO HUSTLE AM.',
-  'WAKA, OKADA, KEKE, ANYHOW! OYA, HELP AM REACH THE OWAMBE BEFORE DEM CUT CAKE!',
+  'TUNDE PROMISE ONE THING: HIM GO CARRY THE FAMILY ASO-EBI REACH THE OWAMBE.',
+  'BUT HIM MOTOR DON KNOCK FOR OSHODI, AND THE CLOTH NEVER COMOT THE TAILOR HAND.',
+  'NO SHAKING. HIM BEST AGBADA DEY HIM BODY, SMALL CHANGE DEY HIM POCKET.',
+  'WAKA, OKADA, KEKE, CANOE, ANYHOW! MAKE HIM REACH BEFORE DEM CUT CAKE!',
 ];
 
 const CONDUCTOR_CALLS = [
@@ -97,6 +101,20 @@ const EFFECTS = {
   },
   reward({ game }) {
     game.earn(LEVELS[game.levelIndex].reward || 0);
+  },
+  // The bundle of family cloth is the story. Picking it up, losing it, getting it back.
+  carry({ game }) {
+    game.aso = true;
+    Sound.play('power');
+  },
+  robbed({ game, player }) {
+    game.aso = false;
+    const taken = Math.floor(game.naira / 2);
+    game.naira -= taken;
+    player.setForm('small');
+    Sound.play('steal');
+    Sound.speak('fashe', { vol: 1 });
+    game.say(`DEM COLLECT THE ASO-EBI AND ₦${taken}!`, '#e3412f');
   },
 };
 
@@ -214,21 +232,51 @@ const SCRIPTS = {
   }),
 
   mum: () => ({
-    start: { text: 'TUNDE! YOU DON REACH? THANK GOD. MOTOR DON SPOIL AGAIN, ABI?', next: 'b' },
-    b: { text: 'THE ASO-EBI DEY WITH TAILOR KUNLE FOR BALOGUN MARKET. GO COLLECT AM SHARP SHARP.', next: 'c' },
-    c: { text: 'TAKE THIS ₦200 FOR TRANSPORT. NO SPEND AM ALL FOR SUYA O!', effect: 'reward' },
+    start: { text: 'TUNDE! THANK GOD. I HEAR SAY YOUR MOTOR KNOCK FOR OSHODI.', next: 'b' },
+    b: { text: 'NO MIND AM. THE IMPORTANT THING NA THE ASO-EBI - TWENTY-FIVE PIECE, THE WHOLE FAMILY DEY WAIT.', next: 'c' },
+    c: { text: 'E DEY WITH TAILOR KUNLE FOR BALOGUN MARKET. GO COLLECT AM BEFORE THE MARKET CLOSE.', next: 'd' },
+    d: { text: 'TAKE ₦200 FOR TRANSPORT. AND TUNDE - NO SPEND AM ALL FOR SUYA.', effect: 'reward' },
   }),
 
   tailor: () => ({
-    start: { text: 'OGA TUNDE! YOUR ASO-EBI DON READY. TWENTY-FIVE PIECES, SEW WELL WELL.', next: 'b' },
-    b: { text: 'BUT THE WEDDING DEY LAGOS ISLAND. YOU GO CROSS 3RD MAINLAND BRIDGE.', next: 'c' },
-    c: { text: 'OKADA DEY FLY FOR THAT BRIDGE, SHINE YOUR EYE! TAKE ₦200 CHANGE FOR ROAD.', effect: 'reward' },
+    start: { text: 'OGA TUNDE! I DON DEY WAIT SINCE MORNING. YOUR ASO-EBI DON READY.', next: 'b' },
+    b: { text: 'TWENTY-FIVE PIECE, SEW WELL WELL. NO THREAD DEY COMOT.', effect: 'carry', next: 'c' },
+    c: { text: 'NOW CARRY AM GO ISLAND. NA THIRD MAINLAND BRIDGE YOU GO CROSS.', next: 'd' },
+    d: { text: 'ONE WARNING: WHEN YOU COMOT THE BRIDGE, NO ENTER ANY BUS WEY YOU NO SABI. TAKE ₦200.', effect: 'reward' },
+  }),
+
+  // End of the bridge. This is the turn the whole story hangs on.
+  fashe: () => ({
+    start: { text: 'CMS! OBALENDE! ISLAND DIRECT! ENTER SHARP SHARP, NA ONE SPACE REMAIN!', next: 'b' },
+    b: { text: 'THE BUS DEY SWEET. CONDUCTOR DEY SMILE. TUNDE ENTER, HOLD THE ASO-EBI FOR HIM CHEST.', next: 'c' },
+    c: { text: '...THE DOOR LOCK. THE BUS PASS THE ISLAND TURNING WITHOUT SLOWING.', next: 'd' },
+    d: { text: 'OGA. NA ONE CHANCE YOU ENTER. DROP THE BAG. DROP EVERYTHING. NO SHOUT.', effect: 'robbed', next: 'e' },
+    e: { text: 'DEM THROW AM COMOT FOR OJUELEGBA. NIGHT DON FALL. THE BUS DON VANISH.', next: 'f' },
+    f: 'TWENTY-FIVE PIECE OF CLOTH. THE WHOLE FAMILY DEY WAIT FOR AM. TUNDE STAND UP.',
+  }),
+
+  risi: () => ({
+    start: { text: 'AH, MY BROTHER. I SEE HOW DEM THROW YOU COMOT. ONE CHANCE, ABI?', next: 'b' },
+    b: { text: 'NO VEX. I BE VULCANIZER FOR THIS JUNCTION TWENTY-TWO YEARS. I SABI EVERY FACE WEY PASS.', next: 'c' },
+    c: { text: 'THAT BUS NA FASHE OWN. WHATEVER HIM COLLECT, HIM DEY CARRY AM GO MAKOKO - FOR TOP WATER.', next: 'd' },
+    d: { text: 'DEM DEY SELL BEFORE MORNING. IF YOU WAN SEE YOUR CLOTH AGAIN, NA TONIGHT.', next: 'e' },
+    e: { text: 'TAKE ₦300. FIND CANOE FOR THE WATERSIDE. GO COLLECT WETIN BE YOUR OWN.', effect: 'reward' },
+  }),
+
+  ebun: () => ({
+    start: { text: 'SO NA YOU BE THE ONE WEY DEY CHASE FASHE BOYS ACROSS MY WATER?', next: 'b' },
+    b: { text: 'DEM RUN. DEM SEE YOUR FACE AND DEM JUST RUN. DEM LEAVE THE BAG FOR MY CANOE.', effect: 'carry', next: 'c' },
+    c: { text: 'TAKE AM. TWENTY-FIVE PIECE, NOTHING MISSING. I COUNT AM MYSELF.', next: 'd' },
+    d: { text: 'NOW GO. THE ISLAND DEY THAT SIDE, AND WEDDING NO DEY WAIT FOR ANYBODY.', next: 'e' },
+    e: 'AND MY PIKIN - NEXT TIME, NO ENTER ANY BUS WEY THE CONDUCTOR NO GET CHANGE.',
   }),
 
   bride: () => ({
-    start: { text: 'BROTHER TUNDE!!! YOU REACH! AND YOU BRING THE ASO-EBI!', next: 'b' },
-    b: { text: 'EVERYBODY DON WEAR AM. WE DON CUT CAKE... BUT WE KEEP YOUR OWN PIECE.', next: 'c' },
-    c: 'OYA COME, MAKE WE DANCE! YOU BE ODOGWU!',
+    start: { text: 'BROTHER TUNDE!!! AH! YOU REACH! AND THE ASO-EBI DEY YOUR HAND!', next: 'b' },
+    b: { text: 'MAMA TALK SAY ONE CHANCE CARRY AM. I NO BELIEVE SAY YOU GO GET AM BACK.', next: 'c' },
+    c: { text: 'LOOK EVERYBODY - THE WHOLE FAMILY GO WEAR THE SAME CLOTH. NA WETIN I WANT.', next: 'd' },
+    d: { text: 'WE NEVER CUT CAKE. WE DEY WAIT FOR YOU.', next: 'e' },
+    e: 'OYA COME, MAKE WE DANCE! MY BROTHER NA ODOGWU!',
   }),
 };
 

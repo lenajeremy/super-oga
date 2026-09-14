@@ -149,7 +149,7 @@ let lastLevel = Game.levelIndex;
 // scripted player is good at it. Deaths are reported either way.
 Game.lives = 30;
 
-for (let frame = 0; frame < 30000 && Game.state !== 'victory'; frame++) {
+for (let frame = 0; frame < 90000 && Game.state !== 'victory'; frame++) {
   const w = Game.world;
   if (Game.state === 'gameover') { fail(`ran out of ${stats.deaths} lives on stage ${LEVELS[Game.levelIndex].id}`); break; }
 
@@ -205,11 +205,17 @@ for (let frame = 0; frame < 30000 && Game.state !== 'victory'; frame++) {
     // Open water ahead: wait on the bank for a canoe or lift, then hop aboard.
     const overWater = (x) => w.tileAt(Math.floor(x / 16), Math.floor((p.bottom + 20) / 16)) === '~';
     if (p.onGround && !p.ride && overWater(front + 16)) {
-      const boat = w.entities
-        .filter((e) => e.constructor.name === 'Platform' && e.x + e.w > p.x && e.x - p.x < 150)
-        .sort((a, b) => a.x - b.x)[0];
-      const ready = boat && boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40;
-      if (!ready) { press(); tick(1); continue; }
+      // How far to the far bank? A running jump crosses about 140px, so anything shorter
+      // is simply jumped; only a real stretch of water is worth waiting for a boat.
+      let far = 8;
+      while (far < 240 && !w.solidAt(front + far, p.bottom + 4)) far += 8;
+      if (far > 112) {
+        const boat = w.entities
+          .filter((e) => e.constructor.name === 'Platform' && e.x + e.w > p.x && e.x - p.x < 150)
+          .sort((a, b) => a.x - b.x)[0];
+        const ready = boat && boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40;
+        if (!ready) { press(); tick(1); continue; }
+      }
     }
     // Riding a canoe or lift: look right for the next foothold - solid ground or another
     // platform - and hop across once it is in range, otherwise sit tight and ride.

@@ -167,14 +167,17 @@ tick(20);
 if (Game.state === 'intro') snap('stage-intro');
 while (Game.state === 'intro') tick(1);
 
-// This run exists to photograph every screen, so give it lives to spare.
+// This run exists to photograph every screen, so it plays in cheat mode and cannot be
+// killed. Difficulty is the smoke test's job, not this one's.
+Game.cheat = true;
 Game.lives = 30;
-const wanted = new Map([[0, 'stage1-oshodi'], [1, 'stage2-balogun'], [2, 'stage3-bridge']]);
+const wanted = new Map([[0, 'stage1-oshodi'], [1, 'stage2-balogun'], [2, 'stage3-bridge'],
+  [3, 'stage4-ojuelegba'], [4, 'stage5-makoko'], [5, 'stage6-island']]);
 let gotDialog = false;
 let gotRide = false;
 let gotClear = false;
 let gotDark = false;
-for (let f = 0; f < 40000 && Game.state !== 'victory'; f++) {
+for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
   if (Game.state === 'intro') { confirm(); continue; }
   if (Game.state === 'gameover') { fail('died out before the end'); break; }
   const w = Game.world;

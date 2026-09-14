@@ -21,7 +21,7 @@ const STAND_RISE = 83;   // px gained by a standing jump, button held
 const RUN_RISE = 98;     // px gained by a running jump
 const RUN_REACH = 8;     // tiles of horizontal travel in that running jump
 const NPC_KINDS = ['suya', 'mamaput', 'nurse', 'water', 'okadaman', 'kekeman'];
-const HOSTS = ['mum', 'tailor', 'bride'];
+const HOSTS = ['mum', 'tailor', 'fashe', 'risi', 'ebun', 'bride'];
 const MAX_GAP = 5;
 let failures = 0;
 const fail = (level, msg) => {
@@ -134,7 +134,7 @@ for (const level of LEVELS) {
   }
   if (!HOSTS.includes(level.host)) fail(level, `unknown Owambe host "${level.host}"`);
   for (const field of ['story', 'tip', 'song', 'ambience']) if (!level[field]) fail(level, `missing "${field}"`);
-  if (!['street', 'market', 'bridge'].includes(level.ambience)) fail(level, `unknown ambience "${level.ambience}"`);
+  if (!['street', 'market', 'bridge', 'night'].includes(level.ambience)) fail(level, `unknown ambience "${level.ambience}"`);
 }
 
 console.log(failures ? `\n${failures} problem(s) found` : '\nAll levels OK');
