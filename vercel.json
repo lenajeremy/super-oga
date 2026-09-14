@@ -5,17 +5,15 @@
   "framework": null,
   "headers": [
     {
-      "//": "Media carries a ?v= content stamp in its URL, so a changed file is a changed URL and this is safe to keep forever.",
       "source": "/assets/:dir(sprites|photos|voice)/:file(.+).:ext(jpg|jpeg|png|mp3|m4a|wav)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "//": "The manifests and the game code keep the same filenames while their contents change, so they must always be revalidated. Caching these is what broke a deploy: new code paired with a year-old sprite index.",
       "source": "/(.*).js",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {
-      "source": "/",
+      "source": "/(index.html)?",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     }
   ]
