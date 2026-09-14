@@ -122,6 +122,7 @@ tools/
   measure-jump.mjs      measures the real jump arcs, which check-levels.mjs relies on
   check-reach.mjs       proves every platform can be landed on AND stood on, by simulation
   check-mechanics.mjs   exercises each mechanic directly: spring, warp, shell, climb, swim, boss
+  record.mjs            records the game playing itself to an MP4, with its own soundtrack
   build-voices.mjs      records the spoken lines (YarnGPT Nigerian voices, or macOS say)
   serve.mjs             the little static server behind `npm start`
 ```
@@ -139,6 +140,9 @@ node tools/measure-jump.mjs           # jump heights; re-run after touching the 
 node tools/preview-music.mjs eko 8 eko.wav   # audition a song
 node tools/preview-sound.mjs list            # every effect, voice and ambience
 node tools/preview-sound.mjs night 12        # 12s of blackout insects
+
+node tools/record.mjs 2-2 60 boss.mp4        # record a minute of the Fashe fight
+node tools/record.mjs 1-1 45 --scale 4       # bigger, for a clean capture
 ONLY_VOICE=shaker NO_NORM=1 node tools/preview-music.mjs eko   # isolate one kit voice
 ```
 
