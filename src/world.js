@@ -3,6 +3,9 @@
 'use strict';
 
 const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P', 'u']);
+// Slow enough that a 480px backdrop covers the widest level without wrapping:
+// 400 (view) + 3696 (camera travel) * 0.02 = 474px used of 480.
+const BACKDROP_PARALLAX = 0.02;
 const CRATES = new Set(['?', 'M', 'U', 'S', 'L', 'h']);
 
 // Stalls that come with a seller: [sheet, sprite, x offset where the seller stands].
@@ -400,23 +403,14 @@ class World {
     ctx.fillStyle = this.sky;
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
-    // Stock photo, far away: scrolls slowly, tiled with every other copy mirrored.
+    // Stock photo, far away. It drifts very slowly - slowly enough that one copy lasts a
+    // whole level, so it never repeats and there is no seam. It used to scroll faster and
+    // tile, with alternate copies mirrored to hide the join, but a mirrored street reads
+    // as a glitch. Depth comes from the pixel buildings behind, which move at half speed.
     const photo = Assets.photos[this.def.photo];
     const pw = photo.width;
-    const offset = (camX * 0.15) % (pw * 2);
-    for (let i = 0; i < 3; i++) {
-      const x = Math.round(i * pw - offset);
-      if (x >= VIEW_W || x + pw <= 0) continue;
-      if (i % 2 === 0) {
-        ctx.drawImage(photo, x, 0);
-      } else {
-        ctx.save();
-        ctx.translate(x + pw, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(photo, 0, 0);
-        ctx.restore();
-      }
-    }
+    const offset = camX * BACKDROP_PARALLAX;
+    for (let x = Math.round(-(offset % pw)); x < VIEW_W; x += pw) ctx.drawImage(photo, x, 0);
     ctx.fillStyle = this.theme.haze;
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 

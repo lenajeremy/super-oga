@@ -75,6 +75,29 @@ const LINES = {
   market3: ['sikirat', 'Buy your own! E remain small!'],
 };
 
+// YarnGPT hands back audio that stops dead on the last phoneme, with no decay, which
+// sounds like the line was cut off. Ease the tail down and leave a beat of silence.
+function softenTail(wav, fadeMs = 70, tailMs = 140) {
+  let off = 12;
+  while (off < wav.length - 8 && wav.toString('latin1', off, off + 4) !== 'data') off += 8 + wav.readUInt32LE(off + 4);
+  if (off >= wav.length - 8) return wav;                       // not a WAV we understand
+  const rate = wav.readUInt32LE(24);
+  const channels = wav.readUInt16LE(22);
+  const dataAt = off + 8;
+  const bytes = wav.readUInt32LE(off + 4);
+  const samples = bytes / 2;
+  const fade = Math.min(samples, Math.floor((fadeMs / 1000) * rate) * channels);
+  for (let i = 0; i < fade; i++) {
+    const at = dataAt + (samples - fade + i) * 2;
+    wav.writeInt16LE(Math.round(wav.readInt16LE(at) * (1 - i / fade)), at);
+  }
+  const silence = Buffer.alloc(Math.floor((tailMs / 1000) * rate) * channels * 2);
+  const out = Buffer.concat([wav.subarray(0, dataAt), wav.subarray(dataAt, dataAt + bytes), silence]);
+  out.writeUInt32LE(bytes + silence.length, off + 4);           // data chunk size
+  out.writeUInt32LE(out.length - 8, 4);                         // RIFF size
+  return out;
+}
+
 async function yarn(text, voice, format = 'mp3') {
   const res = await fetch('https://yarngpt.ai/api/v1/tts', {
     method: 'POST',
@@ -111,7 +134,7 @@ let kept = 0;
 for (const [id, [speaker, text]] of Object.entries(LINES)) {
   const cast = CAST[speaker];
   const voice = provider === 'yarngpt' ? cast.yarngpt : cast.say[0];
-  const ext = provider === 'yarngpt' ? 'mp3' : 'm4a';
+  const ext = 'm4a';
   const stamp = crypto.createHash('sha1').update(`${provider}|${JSON.stringify(cast[provider])}|${text}`).digest('hex').slice(0, 8);
   const file = path.join(OUT, `${id}.${ext}`);
   const marker = path.join(OUT, `.${id}.${stamp}`);
@@ -120,7 +143,11 @@ for (const [id, [speaker, text]] of Object.entries(LINES)) {
     kept++;
   } else {
     if (provider === 'yarngpt') {
-      fs.writeFileSync(file, await yarn(text, voice));
+      // Fetch as WAV so the tail can be eased off, then encode.
+      const wav = path.join(OUT, `.${id}.wav`);
+      fs.writeFileSync(wav, softenTail(await yarn(text, voice, 'wav')));
+      execFileSync('afconvert', ['-f', 'mp4f', '-d', 'aac', '-b', '96000', wav, file]);
+      fs.rmSync(wav);
     } else {
       const [sayVoice, rate, pitch] = cast.say;
       const txt = path.join(OUT, `.${id}.txt`);

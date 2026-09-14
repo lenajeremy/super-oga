@@ -5,7 +5,8 @@
  * the originals in assets/photos/original/ and writes game-sized JPGs to assets/photos/.
  * The game copies are deliberately small - roughly one screen wide - because the game
  * draws them into its 400x224 canvas, which then scales up with hard pixel edges. That
- * chunky, blocky backdrop is the look. Also writes credits.js and CREDITS.md.
+ * chunky, blocky backdrop is the look. A 480x224 crop keeps enough of the scene to read;
+ * going wider would only shave it into a thin band. Also writes credits.js and CREDITS.md.
  * Re-running skips photos that were already downloaded at the needed size.
  */
 import fs from 'node:fs';

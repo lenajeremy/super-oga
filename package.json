@@ -9,7 +9,7 @@
     "sprites": "node tools/build-sprites.mjs",
     "photos": "node tools/fetch-photos.mjs",
     "bundle": "node tools/bundle-assets.mjs",
-    "test": "node tools/check-levels.mjs && node tools/smoke-test.mjs",
+    "test": "node tools/check-levels.mjs && node tools/check-reach.mjs && node tools/smoke-test.mjs",
     "shots": "node tools/capture.mjs"
   },
   "license": "ISC",
