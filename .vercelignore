@@ -1,0 +1,13 @@
+# Never upload secrets.
+.env
+.env.*
+
+# Not needed by the deployed game: the build tools and their dependencies.
+node_modules
+tools
+package.json
+package-lock.json
+shots
+*.wav
+*.aiff
+assets/photos/original

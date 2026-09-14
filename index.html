@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SUPER OGA: Wahala for Eko</title>
+<meta name="theme-color" content="#1a1423">
+<style>
+  html, body { margin: 0; height: 100%; background: #1a1423; overflow: hidden; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
+  #game { display: block; background: #000; image-rendering: pixelated; image-rendering: crisp-edges; }
+  #touch {
+    position: fixed; left: 0; right: 0; bottom: 0; display: none; justify-content: space-between; align-items: flex-end;
+    padding: 0 max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    pointer-events: none;
+  }
+  .touch-on #touch { display: flex; }
+  .pad { display: flex; gap: 14px; align-items: flex-end; pointer-events: auto; }
+  .btn {
+    width: 68px; height: 68px; border-radius: 50%; box-sizing: border-box;
+    border: 3px solid rgba(248, 244, 234, 0.6); background: rgba(26, 20, 35, 0.45); color: #f8f4ea;
+    font: 700 15px/62px ui-monospace, Menlo, monospace; text-align: center;
+  }
+  .btn.on { background: rgba(31, 157, 87, 0.75); }
+  .btn.small { width: 58px; height: 36px; border-radius: 10px; line-height: 30px; font-size: 12px; margin-bottom: 16px; }
+  .btn.ride { display: none; border-color: rgba(255, 205, 58, 0.85); }
+  .near-ride .btn.ride.enter, .riding .btn.ride.exit { display: block; }
+</style>
+</head>
+<body>
+<canvas id="game" width="400" height="224" aria-label="SUPER OGA: Wahala for Eko"></canvas>
+<div id="touch" aria-hidden="true">
+  <div class="pad">
+    <div class="btn" data-action="left">&#9664;</div>
+    <div class="btn" data-action="right">&#9654;</div>
+  </div>
+  <div class="pad">
+    <div class="btn small" data-action="pause">II</div>
+    <div class="btn small ride enter" data-action="up">ENTER</div>
+    <div class="btn small ride exit" data-action="down">COMOT</div>
+    <div class="btn" data-action="run">RUN</div>
+    <div class="btn" data-action="jump">JUMP</div>
+  </div>
+</div>
+<script>
+  // The game reads its JPG sprite sheets back into a canvas. Browsers refuse that for
+  // separate files on file:// pages, so there we load the same JPGs inlined as data URIs.
+  if (location.protocol === 'file:') document.write('<script src="assets/bundle.js"><\/script>');
+</script>
+<script src="src/pixelfont.js"></script>
+<script src="assets/sprites/manifest.js"></script>
+<script src="assets/photos/credits.js"></script>
+<script src="assets/voice/manifest.js"></script>
+<script src="src/core.js"></script>
+<script src="src/input.js"></script>
+<script src="src/music.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/levels.js"></script>
+<script src="src/story.js"></script>
+<script src="src/world.js"></script>
+<script src="src/entities.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
