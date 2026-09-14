@@ -2,7 +2,7 @@
  * road, and drawing. */
 'use strict';
 
-const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P', 'u']);
+const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P', 'u', 'D']);
 // Slow enough that a 480px backdrop covers the widest level without wrapping:
 // 400 (view) + 4976 (camera travel on a 336-tile stage) * 0.015 = 475px used of 480.
 const BACKDROP_PARALLAX = 0.015;
@@ -41,6 +41,8 @@ class World {
     this.checkpoint = null;
     this.goal = null;
     this.blackout = null;
+    // Manhole to manhole: Mario's pipes, by way of the gutter.
+    this.warps = new Map((this.def.warps || []).flatMap(([a, b]) => [[a, b], [b, a]]));
 
     let start = { x: 2 * TILE, y: 11 * TILE };
     for (let ty = 0; ty < this.rows; ty++) {
@@ -48,7 +50,7 @@ class World {
         const ch = map[ty][tx];
         const px = tx * TILE;
         const py = ty * TILE;
-        this.tiles.push('#BX?MUSLhP=~'.includes(ch) ? ch : '.');
+        this.tiles.push('#BX?MUSLhP=~vD'.includes(ch) ? ch : '.');
         if (ch === 'M') this.coinsLeft.set(ty * this.cols + tx, 8);
         else if (ch === 'o') this.add(new Coin(this, px, py));
         else if (ch === '@') start = { x: px, y: py };
@@ -64,6 +66,9 @@ class World {
         else if (ch === '_') this.add(new Platform(this, px, py, 'canoe'));
         else if (ch === '|') this.add(new Platform(this, px, py, 'lift'));
         else if (ch === 'f') this.add(new Platform(this, px, py, 'raft'));
+        else if (ch === 'b') this.add(new Spring(this, px, py));
+        else if (ch === 'e') this.secretExit = this.add(new SecretExit(this, px, py));
+        else if (ch === 'Z') this.boss = this.add(new Boss(this, px, py));
       }
     }
 
@@ -120,7 +125,7 @@ class World {
   }
 
   groundTop(tx) {
-    for (let ty = 0; ty < this.rows; ty++) if (this.tileAt(tx, ty) === '#') return ty * TILE;
+    for (let ty = 0; ty < this.rows; ty++) if ('#D'.includes(this.tileAt(tx, ty))) return ty * TILE;
     return null;
   }
 
@@ -257,6 +262,14 @@ class World {
     }
   }
 
+  // Standing on a manhole and pressing down drops you through to the far one.
+  warpFrom(col) {
+    const to = this.warps.get(col);
+    if (to === undefined) return null;
+    const ground = this.groundTop(to);
+    return ground === null ? null : { x: to * TILE, bottom: ground };
+  }
+
   // The closest person or ride Oga can press up to talk to / climb into.
   interactable(player) {
     let best = null;
@@ -290,6 +303,8 @@ class World {
     b.flicker = b.flicker > 0 ? b.flicker - 1 : Math.random() < 0.006 ? 9 : 0;
     if (b.t >= b.duration) {
       this.blackout = null;
+    // Manhole to manhole: Mario's pipes, by way of the gutter.
+    this.warps = new Map((this.def.warps || []).flatMap(([a, b]) => [[a, b], [b, a]]));
       Sound.play('nepaOn');
       Sound.duckMusic(false);
       Sound.setAmbience(this.def.ambience);
@@ -498,6 +513,8 @@ class World {
             break;
           }
           case '~': name = this.tileAt(tx, ty - 1) === '~' ? 'water_fill' : water; break;
+          case 'v': name = 'scaffold'; break;
+          case 'D': name = 'manhole'; break;
           default: continue;
         }
         const x = tx * TILE - camX;

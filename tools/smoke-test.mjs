@@ -214,6 +214,7 @@ for (let frame = 0; frame < 90000 && Game.state !== 'victory'; frame++) {
 
     // Open water ahead: wait on the bank for a canoe or lift, then hop aboard.
     const overWater = (x) => w.tileAt(Math.floor(x / 16), Math.floor((p.bottom + 20) / 16)) === '~';
+    if (p.swimming) { press('ArrowRight', ...(frame % 14 < 3 ? ['Space'] : [])); tick(1); continue; }
     if (p.onGround && !p.ride && overWater(front + 16)) {
       // How far to the far bank? A running jump crosses about 140px, so anything shorter
       // is simply jumped; only a real stretch of water is worth waiting for a boat.
@@ -231,7 +232,13 @@ for (let frame = 0; frame < 90000 && Game.state !== 'victory'; frame++) {
         const ready = boat && (ferry
           ? boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40
           : gapTo < 150 && boat.y - p.bottom > -70 && boat.y - p.bottom < 30);
-        if (!ready) { press(); tick(1); continue; }
+        // No boat coming, but on a swim stage you can just get in and swim it.
+        if (!ready) {
+          if (w.def.swim) press('ArrowRight', ...(frame % 16 < 2 ? ['Space'] : []));
+          else press();
+          tick(1);
+          continue;
+        }
       }
     }
     // Riding a canoe or lift: look right for the next foothold - solid ground or another

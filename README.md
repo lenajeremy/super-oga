@@ -75,6 +75,13 @@ northern, Iya Sikirat is Yoruba, Mama Nkechi is Igbo. Where a recording is missi
 falls back to a synthesised cry: a buzzy tone pushed through vowel formants, which reads as
 somebody calling without ever being intelligible.
 
+Mario's furniture is all here, wearing Lagos clothes: a foam mattress for a springboard,
+scaffolding to climb instead of vines, a manhole that drops you into an under-bridge coin
+stash and back, a flattened gutter rat that kicks like a shell, a shortcut that skips a
+whole stage, swimmable lagoon in Makoko, and Fashe waiting at the end of it as a boss who
+takes three stomps before he gives the cloth back. A hundred coins is still a life, and
+reaching a stage's end high still pays a bigger bonus.
+
 And every so often NEPA takes the light. The music ducks away, crickets and mosquitoes take
 over, and the street goes black except for a small pool around Oga and whatever is running
 on a generator - until somebody shouts UP NEPA.
@@ -106,6 +113,8 @@ tools/
   smoke-test.mjs        plays the whole game headlessly with scripted input
   capture.mjs           renders real frames to PNG, headlessly, for checking the art
   measure-jump.mjs      measures the real jump arcs, which check-levels.mjs relies on
+  check-reach.mjs       proves every platform can be landed on AND stood on, by simulation
+  check-mechanics.mjs   exercises each mechanic directly: spring, warp, shell, climb, swim, boss
   build-voices.mjs      records the spoken lines (YarnGPT Nigerian voices, or macOS say)
   serve.mjs             the little static server behind `npm start`
 ```

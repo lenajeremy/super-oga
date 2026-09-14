@@ -89,6 +89,17 @@ function roadSign(text) {
   return p.box(2, 2, w - 4, 14, 'W').text(Math.floor((w - measure(text)) / 2), 7, text, 'W');
 }
 
+function mattress(squashed) {
+  const p = new Pix(28, squashed ? 8 : 16);
+  const h = squashed ? 8 : 16;
+  p.rect(0, 0, 28, h, 'W').rect(0, 0, 28, 2, 'w');
+  for (let x = 2; x < 28; x += 6) p.rect(x, 0, 3, h, 'R');
+  p.rect(0, h - 3, 28, 3, 'b');
+  p.outline('K');
+  for (let x = 4; x < 26; x += 7) p.set(x, squashed ? 3 : 6, 'n');
+  return p;
+}
+
 function generator() {
   const p = new Pix(22, 16);
   p.rect(1, 0, 20, 2, 'n').rect(1, 0, 2, 14, 'n').rect(19, 0, 2, 14, 'n');
@@ -133,6 +144,8 @@ export function decorFrames() {
     sign_makoko: roadSign('MAKOKO WATERSIDE'),
     sign_island: roadSign('LAGOS ISLAND'),
     generator: generator(),
+    mattress: mattress(false),
+    mattress_squash: mattress(true),
     canoe: canoe(),
     lift: lift(),
   };

@@ -123,7 +123,10 @@ for (let i = 0; i < LEVELS.length; i++) {
     else surfaces.push({ y, x0: x, x1: x, ground: true });
   }
 
+  // Anywhere a manhole drops you out is reachable by definition, not by jumping.
+  const warpCols = new Set((LEVELS[i].warps || []).flat());
   for (const t of targets) {
+    if ([...warpCols].some((c) => c >= t.x0 - 12 && c <= t.x1 + 12)) continue;
     let reachable = false;
     let bestGap = Infinity;
     let tried = 0;

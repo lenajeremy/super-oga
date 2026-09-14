@@ -67,7 +67,7 @@ class Player extends Entity {
     super(world, x, bottom - 20, 10, 20);
     Object.assign(this, {
       form: 'small', state: 'play', invuln: 0, odogwu: 0, coyote: 0, jumpBuffer: 0, freeze: 0, throwTimer: 0,
-      anim: 0, crouching: false, skidding: false, ride: null, deathTimer: 0, cause: null, vehicle: null, mountCooldown: 0,
+      anim: 0, crouching: false, skidding: false, climbing: false, swimming: false, strokeTimer: 0, springLift: 0, ride: null, deathTimer: 0, cause: null, vehicle: null, mountCooldown: 0,
     });
     this.prevBottom = this.bottom;
     // Last spot Oga stood on solid ground - where cheat mode puts him back.
@@ -293,6 +293,32 @@ class Player extends Entity {
       if (this.odogwu === 0) Sound.setSpeed(world.game.hurry ? 1.15 : 1);
     }
 
+    // Scaffolding: hold up or down against it and Oga climbs. Left or right hops off.
+    const midTile = world.tileAt(Math.floor(this.cx / TILE), Math.floor((this.y + this.h / 2) / TILE));
+    if (midTile === 'v' && (Input.down.up || Input.down.down) && !this.vehicle) this.climbing = true;
+    if (this.climbing) {
+      if (midTile !== 'v') {
+        this.climbing = false;
+      } else {
+        const dy = (Input.down.down ? 1 : 0) - (Input.down.up ? 1 : 0);
+        this.vy = dy * 1.6;
+        this.vx = 0;
+        this.anim += Math.abs(this.vy) * 0.12;
+        const hop = (Input.down.right ? 1 : 0) - (Input.down.left ? 1 : 0);
+        if (hop) {
+          this.climbing = false;
+          this.facing = hop;
+          this.vx = hop * 1.8;
+          this.vy = -4;
+        } else {
+          this.prevBottom = this.bottom;
+          world.moveY(this, this.vy);
+          this.onGround = world.grounded(this);
+          return;
+        }
+      }
+    }
+
     // Up is jump, except when there is somebody in front of you - then it talks, buys,
     // haggles or climbs aboard. Checked before the jump below so it wins, and the jump
     // buffer is cleared so the press does not leak into a hop on the way out.
@@ -308,6 +334,23 @@ class Player extends Entity {
     if (this.vehicle && this.onGround && Input.pressed.down) {
       this.dismount();
       return;
+    }
+
+    // Down a manhole and out of another one, somewhere else entirely.
+    if (Input.pressed.down && this.onGround && !this.vehicle) {
+      const here = world.tileAt(Math.floor(this.cx / TILE), Math.floor((this.bottom + 2) / TILE));
+      const dest = here === 'D' ? world.warpFrom(Math.floor(this.cx / TILE)) : null;
+      if (dest) {
+        this.x = dest.x + 2;
+        this.y = dest.bottom - this.h;
+        this.vx = 0;
+        this.vy = 0;
+        this.freeze = 12;
+        world.camera.x = clamp(this.x - VIEW_W / 2, 0, world.width - VIEW_W);
+        Sound.play('warp');
+        world.float('GUTTER EXPRESS!', this.cx, this.y - 10, '#63d68f');
+        return;
+      }
     }
 
     // Walking, running, or driving.
@@ -332,6 +375,29 @@ class Player extends Entity {
       world.particles.push(new Particle(this.cx - 4, this.bottom - 7, { vy: -0.3, life: 14, frames: ['dust1', 'dust2'], rate: 7 }));
     }
 
+    // In the water on a swim stage everything slows down: you sink gently and stroke up.
+    this.swimming = !!world.def.swim && world.tileAt(Math.floor(this.cx / TILE), Math.floor((this.y + this.h * 0.6) / TILE)) === '~';
+    if (this.swimming) {
+      if (this.strokeTimer > 0) this.strokeTimer--;
+      this.vx = clamp(this.vx, -1.7, 1.7);
+      if (Input.pressed.jump && this.strokeTimer === 0) {
+        this.vy = -2.3;
+        this.strokeTimer = 14;
+        Sound.play('stroke');
+        world.particles.push(new Particle(this.cx - 6, this.y + 4, { vy: -0.5, life: 16, frames: ['splash1', 'splash2'], rate: 8 }));
+      }
+      this.vy = Math.min(this.vy + 0.13, 1.5);
+      this.prevBottom = this.bottom;
+      if (world.moveX(this, this.vx)) this.vx = 0;
+      const wet = world.moveY(this, this.vy);
+      this.onGround = wet === 1;
+      if (wet) this.vy = 0;
+      this.x = clamp(this.x, 0, world.width - this.w);
+      this.anim += Math.abs(this.vx) * 0.06;
+      if (this.y > world.height + 8) this.die('fall');
+      return;
+    }
+
     // Jumping: buffered presses, coyote time, lighter gravity while the button is held.
     this.jumpBuffer = Input.pressed.jump ? 8 : Math.max(0, this.jumpBuffer - 1);
     this.coyote = this.onGround ? 6 : Math.max(0, this.coyote - 1);
@@ -343,7 +409,10 @@ class Player extends Entity {
       this.ride = null;
       Sound.play(this.big || ride ? 'bigJump' : 'jump');
     }
-    this.vy = Math.min(this.vy + (this.vy < 0 ? (Input.down.jump ? 0.23 : 0.62) : 0.5), 5.8);
+    if (this.springLift > 0) this.springLift--;
+    const rising = this.vy < 0;
+    const light = Input.down.jump || this.springLift > 0;
+    this.vy = Math.min(this.vy + (rising ? (light ? 0.23 : 0.62) : 0.5), 5.8);
 
     if (ride && Input.pressed.run) {
       Sound.play('horn');
@@ -367,7 +436,7 @@ class Player extends Entity {
     }
 
     const feet = world.tileAt(Math.floor(this.cx / TILE), Math.floor((this.bottom - 3) / TILE));
-    if (feet === '~') this.die('water');
+    if (feet === '~' && !world.def.swim) this.die('water');
     else if (this.y > world.height + 8) this.die('fall');
     if (ride) Sound.updateEngine(Math.abs(this.vx) / ride.max);
     if (this.onGround) this.anim += Math.abs(this.vx) * (ride ? 0.22 : 0.09);
@@ -418,6 +487,8 @@ class Player extends Entity {
     }
     let pose = 'idle';
     if (this.state === 'dead') pose = 'dead';
+    else if (this.swimming) pose = this.strokeTimer > 7 ? 'jump' : Math.floor(this.anim) % 2 ? 'walk2' : 'walk1';
+    else if (this.climbing) pose = Math.floor(this.anim) % 2 ? 'walk2' : 'walk1';
     else if (this.crouching) pose = 'crouch';
     else if (!this.onGround) pose = 'jump';
     else if (this.skidding) pose = 'skid';
@@ -625,28 +696,84 @@ class Enemy extends Entity {
   }
 }
 
+// Mario's Koopa shell, as a flattened gutter rat. Stomp it and it lies there; boot it and
+// it skids down the street taking everything with it; touch it while it is moving and it
+// takes YOU. Stomp it again to stop it dead.
 class Rat extends Enemy {
   constructor(world, x, y) {
     super(world, x + 2, y + 6, 12, 10);
+    this.flatTimer = 0;
+  }
+
+  get sliding() {
+    return this.state === 'flat' && Math.abs(this.vx) > 0.5;
   }
 
   update() {
     this.t++;
-    if (this.state === 'ko') this.updateKO();
-    else if (this.state === 'flat') this.dead = ++this.flatTimer > 30;
-    else this.walk(0.5, false);
+    if (this.state === 'ko') {
+      this.updateKO();
+      return;
+    }
+    if (this.state === 'flat') {
+      // A shell left alone eventually gets up and walks again, like Mario's.
+      if (!this.sliding && ++this.flatTimer > 480) {
+        this.state = 'alive';
+        this.flatTimer = 0;
+        return;
+      }
+      if (this.sliding) {
+        this.flatTimer = 0;
+        if (this.world.moveX(this, this.vx)) this.vx *= -1;
+        for (const o of this.world.entities) {
+          if (o === this || !(o instanceof Enemy) || !o.alive || !overlaps(this, o)) continue;
+          o.knockOut('GBAM!');
+        }
+      }
+      this.fall();
+      return;
+    }
+    this.walk(0.5, false);
   }
 
   stomped(player) {
     this.bounce(player);
+    if (this.sliding) {
+      this.vx = 0;
+      this.world.game.addScore(100, this.cx, this.y - 6, 'HOLD AM!');
+      return;
+    }
     this.state = 'flat';
     this.flatTimer = 0;
+    this.vx = 0;
     this.world.game.addScore(100, this.cx, this.y - 6, pick(['GBAM!', 'KPA!', 'WOSH!']));
+  }
+
+  // Walking into it: a still shell gets kicked, a moving one flattens you.
+  touch(player) {
+    if (this.state === 'flat') {
+      if (player.vy > 0 && player.prevBottom <= this.y + 6) {
+        this.stomped(player);
+        return;
+      }
+      if (this.sliding) {
+        if (player.odogwu > 0 || player.vehicle) this.knockOut();
+        else player.hurt();
+        return;
+      }
+      this.vx = (player.cx < this.cx ? 1 : -1) * 4.2;
+      this.facing = Math.sign(this.vx);
+      Sound.play('kick');
+      this.world.float('KICK AM!', this.cx, this.y - 8, '#ffcd3a');
+      return;
+    }
+    super.touch(player);
   }
 
   draw(ctx, camX) {
     const name = this.state === 'flat' ? 'rat_flat' : (this.t >> 3) % 2 ? 'rat_walk2' : 'rat_walk1';
-    this.sprite(ctx, camX, 'enemies', name, { flipY: this.state === 'ko' });
+    const wobble = this.state === 'flat' && !this.sliding && this.flatTimer > 380 && (this.t >> 2) % 2 ? 1 : 0;
+    this.sprite(ctx, camX, 'enemies', name, { flipY: this.state === 'ko', dx: wobble });
   }
 }
 
@@ -913,6 +1040,103 @@ class Okada extends Enemy {
   }
 }
 
+// Mario's boss, as the man who robbed you. Three stomps, and he throws what he stole.
+class Boss extends Enemy {
+  constructor(world, x, y) {
+    super(world, x + 2, y - 5, 12, 21);
+    this.points = 2000;
+    this.hp = 3;
+    this.alwaysActive = true;
+    this.throwTimer = 90;
+    this.home = this.x;
+    this.stunned = 0;
+  }
+
+  update() {
+    this.t++;
+    if (this.state === 'ko') {
+      this.updateKO();
+      return;
+    }
+    if (this.stunned > 0) {
+      this.stunned--;
+      this.fall();
+      return;
+    }
+    const p = this.world.player;
+    this.facing = Math.sign(p.cx - this.cx) || this.facing;
+    // Paces around his patch and lobs things at you.
+    const speed = 0.6 + (3 - this.hp) * 0.45;
+    this.vx = Math.sign(Math.sin(this.t * 0.012)) * speed;
+    if (this.world.moveX(this, this.vx)) this.vx *= -1;
+    this.fall();
+    if (--this.throwTimer <= 0) {
+      this.throwTimer = Math.max(48, 110 - (3 - this.hp) * 24);
+      this.world.add(new BossThrow(this.world, this.cx - 4, this.y + 6, this.facing));
+      Sound.play('throw');
+    }
+  }
+
+  stomped(player) {
+    this.bounce(player);
+    if (--this.hp > 0) {
+      this.stunned = 45;
+      this.throwTimer = Math.max(this.throwTimer, 60);
+      Sound.play('bump');
+      this.world.shake = 6;
+      this.world.float(`${this.hp} MORE!`, this.cx, this.y - 10, '#ffcd3a');
+      return;
+    }
+    this.knockOut('FASHE DON FALL!');
+    this.world.shake = 10;
+    this.world.game.say('FASHE DON SURRENDER! THE ASO-EBI NA YOUR OWN AGAIN!', '#63d68f');
+    this.world.game.aso = true;
+    this.world.game.asoPieces = 25;
+  }
+
+  hitBySachet() {
+    this.stomped(this.world.player);
+  }
+
+  draw(ctx, camX) {
+    if (this.stunned > 0 && (this.stunned >> 1) % 2 === 0) return;
+    const name = this.state === 'ko' ? 'fashe_talk' : (this.t >> 3) % 2 ? 'fashe_2' : 'fashe_1';
+    this.sprite(ctx, camX, 'people', name, { flipY: this.state === 'ko' });
+    if (this.alive) {
+      for (let i = 0; i < this.hp; i++) {
+        Assets.draw(ctx, 'items', 'aso', this.cx - camX - 18 + i * 13, this.y - 16);
+      }
+    }
+  }
+}
+
+class BossThrow extends Entity {
+  constructor(world, x, y, dir) {
+    super(world, x, y, 8, 8);
+    this.vx = dir * 2.6;
+    this.vy = -1.5;
+    this.alwaysActive = true;
+    this.life = 200;
+  }
+
+  update() {
+    this.t++;
+    this.vy = Math.min(this.vy + 0.22, 5);
+    this.x += this.vx;
+    this.y += this.vy;
+    if (--this.life <= 0 || this.y > this.world.height) this.dead = true;
+  }
+
+  touch(player) {
+    this.dead = true;
+    player.hurt();
+  }
+
+  draw(ctx, camX) {
+    Assets.draw(ctx, 'items', 'debris', this.x - camX, this.y, false, (this.t >> 2) % 2 === 0);
+  }
+}
+
 // Flashes a "!" at the screen edge, then sends an okada in from the right.
 class OkadaWarning extends Entity {
   constructor(world, rowY, dir = -1) {
@@ -1109,6 +1333,38 @@ class AsoPiece extends Entity {
   }
 }
 
+// Mario's springboard, as the foam mattress propped up on half the streets in Lagos.
+// Land on it and it throws you; hold jump as it fires and it throws you much further.
+class Spring extends Entity {
+  constructor(world, x, y) {
+    super(world, x + 2, y + TILE - 16, 28, 16);
+    this.squash = 0;
+  }
+
+  update() {
+    if (this.squash > 0) this.squash--;
+  }
+
+  touch(player) {
+    if (player.state !== 'play' || player.vy <= 0 || player.prevBottom > this.y + 6) return;
+    player.y = this.y - player.h;
+    player.vy = Input.down.jump ? -8.6 : -7.4;
+    // Keep the light, floaty ascent for the whole launch, so the throw does not fizzle
+    // when the player is not holding jump at the moment they land on it.
+    player.springLift = 42;
+    player.onGround = false;
+    player.ride = null;
+    this.squash = 10;
+    Sound.play('spring');
+    this.world.float('BOING!', this.cx, this.y - 10, '#63d68f');
+  }
+
+  draw(ctx, camX) {
+    const squashed = this.squash > 0;
+    Assets.draw(ctx, 'decor', squashed ? 'mattress_squash' : 'mattress', this.x - camX, squashed ? this.y + 8 : this.y);
+  }
+}
+
 class Checkpoint extends Entity {
   constructor(world, x, y) {
     super(world, x, y + TILE - 48, 28, 48);
@@ -1150,11 +1406,41 @@ class Goal extends Entity {
   touch(player) {
     if (this.reached || player.cx < this.x + Math.min(24, this.w / 3)) return;
     this.reached = true;
-    this.world.game.levelClear();
+    // Mario's flagpole: reach it high and the bonus is bigger.
+    const height = clamp((this.bottom - player.bottom) / this.h, 0, 1);
+    const bonus = 200 + Math.round(height * 4800 / 100) * 100;
+    this.world.game.addScore(bonus, player.cx, player.y - 10, `${bonus}!`);
+    this.world.game.levelClear(height);
   }
 
   draw(ctx, camX) {
     Assets.draw(ctx, 'decor', this.name, this.x - camX, this.y);
+  }
+}
+
+// Mario's secret exit: take it and you skip the next stage entirely.
+class SecretExit extends Entity {
+  constructor(world, x, y) {
+    super(world, x, y + TILE - 48, 28, 48);
+    this.taken = false;
+  }
+
+  get prompt() {
+    return this.taken ? null : 'SHORTCUT';
+  }
+
+  interact() {
+    if (this.taken) return;
+    this.taken = true;
+    Sound.play('power');
+    this.world.game.say('YOU SABI ROAD! THIS SHORTCUT GO SAVE YOU PLENTY TIME.', '#63d68f');
+    this.world.game.levelClear(1, 2);
+  }
+
+  draw(ctx, camX) {
+    const bob = Math.round(Math.sin(this.world.frame * 0.1));
+    Assets.draw(ctx, 'decor', 'busstop_on', this.x - camX, this.y + bob);
+    drawText(ctx, 'SHORTCUT', this.cx - camX, this.y - 12, { align: 'center', color: '#63d68f', outline: true });
   }
 }
 

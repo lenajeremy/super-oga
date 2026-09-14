@@ -162,6 +162,29 @@ function waterFill() {
   return speckle(new Pix(T, T).rect(0, 0, T, T, 'b'), 0, T, ['B'], 6, 31);
 }
 
+// Scaffolding you can climb: Mario's vine, as the bamboo-and-plank staging that goes up
+// the side of every half-finished Lagos building.
+function scaffold() {
+  const p = new Pix(T, T);
+  for (const x of [3, 11]) p.rect(x, 0, 2, T, 'D').rect(x, 0, 1, T, 'E');
+  p.rect(2, 3, 12, 2, 'd').rect(2, 11, 12, 2, 'd');
+  p.set(5, 4, 'k').set(12, 4, 'k').set(5, 12, 'k').set(12, 12, 'k');
+  for (const x of [3, 11]) p.rect(x, 7, 2, 1, 'd');
+  return p;
+}
+
+// A manhole cover: step on it, press down, and the gutter takes you somewhere else.
+function manhole() {
+  const p = new Pix(T, T);
+  p.rect(0, 0, T, 5, 'N').rect(0, 0, T, 1, 'W');
+  p.ellipse(8, 5, 7, 3, 'z').ellipse(8, 4.5, 6, 2.2, 'n');
+  for (let x = 3; x < 14; x += 3) p.rect(x, 3, 1, 3, 'z');
+  p.rect(0, 6, T, T - 6, 'k');
+  speckle(p, 7, T, ['z'], 8, 61);
+  p.rect(0, 5, T, 1, 'K');
+  return p;
+}
+
 function rail() {
   // Bridge parapet drawn behind the player on Third Mainland Bridge.
   const p = new Pix(T, T).rect(0, 5, T, 1, 'K').rect(0, 6, T, 2, 'N').rect(0, 6, T, 1, 'W').rect(0, 8, T, 1, 'K');
@@ -197,5 +220,7 @@ export function tileFrames() {
     water_top2: waterTop(1),
     water_fill: waterFill(),
     rail: rail(),
+    scaffold: scaffold(),
+    manhole: manhole(),
   };
 }

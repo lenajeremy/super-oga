@@ -14,7 +14,7 @@ const { LEVELS, THEMES } = scope;
 const decorFrames = scope.window.SPRITE_ATLAS.sheets.decor.frames;
 const photos = new Set(scope.window.PHOTO_CREDITS.map((p) => p.name));
 
-const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P']);
+const SOLID = new Set(['#', 'B', '?', 'M', 'U', 'S', 'L', 'X', 'P', 'D']);
 // How far Oga can actually jump, measured by tools/measure-jump.mjs. Re-run that after
 // touching the jump physics in src/entities.js and update these.
 const STAND_RISE = 83;   // px gained by a standing jump, button held
@@ -47,7 +47,7 @@ for (const level of LEVELS) {
   for (let y = 0; y < map.length; y++) {
     for (let x = 0; x < width; x++) {
       const ch = map[y][x];
-      if ('@CFrgakKN'.includes(ch) && !SOLID.has(at(x, y + 1))) fail(level, `"${ch}" at col ${x}, row ${y} is not standing on solid ground`);
+      if ('@CFrgakKNbeZ'.includes(ch) && !SOLID.has(at(x, y + 1))) fail(level, `"${ch}" at col ${x}, row ${y} is not standing on solid ground`);
       if ('_|f'.includes(ch) && at(x, y + 1) !== '~') fail(level, `platform "${ch}" at col ${x} should sit just above water`);
       if (ch === 'h' && at(x, y + 1) !== '.') fail(level, `hidden crate at col ${x} needs empty space below it`);
       if (ch === 'P' && at(x - 1, y) !== 'P') {
@@ -74,7 +74,8 @@ for (const level of LEVELS) {
   });
   let gap = 0;
   for (let x = 0; x < width; x++) {
-    let support = ferried.has(x);
+    // On a swim stage, open water is something you cross under your own steam.
+    let support = ferried.has(x) || (level.swim && map.some((row) => row[x] === '~'));
     for (let y = 6; y < 14; y++) if (SOLID.has(at(x, y)) || at(x, y) === '=') support = true;
     gap = support ? 0 : gap + 1;
     if (gap === MAX_GAP + 1) fail(level, `gap wider than ${MAX_GAP} tiles ending near col ${x}`);
@@ -95,7 +96,9 @@ for (const level of LEVELS) {
     for (let x = 0; x < width; x++) {
       const ch = at(x, y);
       const isTop = SOLID.has(ch) && !SOLID.has(at(x, y - 1));
-      if (isTop || ch === '=' || '_|f'.includes(ch)) standable.push({ x, y, ch });
+      // A manhole is just a lid on the street: part of the ground, not a platform.
+      const kind = ch === 'D' ? '#' : ch;
+      if (isTop || ch === '=' || '_|f'.includes(ch)) standable.push({ x, y, ch: kind });
     }
   }
   const runs = [];
@@ -133,6 +136,11 @@ for (const level of LEVELS) {
     if (!groundAt(tx + 1)) fail(level, `person "${kind}" at col ${tx} has no ground to stand on`);
   }
   if (!HOSTS.includes(level.host)) fail(level, `unknown Owambe host "${level.host}"`);
+  for (const [a, b] of level.warps || []) {
+    for (const col of [a, b]) {
+      if (!map.some((row) => row[col] === 'D')) fail(level, `warp column ${col} has no manhole (D) on it`);
+    }
+  }
   if (!decorFrames[level.goal]) fail(level, `goal building "${level.goal}" is not in the decor sprite sheet`);
   for (const field of ['story', 'tip', 'song', 'ambience']) if (!level[field]) fail(level, `missing "${field}"`);
   if (!['street', 'market', 'bridge', 'night'].includes(level.ambience)) fail(level, `unknown ambience "${level.ambience}"`);

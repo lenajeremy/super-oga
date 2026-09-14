@@ -13,6 +13,10 @@
  *   r  gutter rat        g  goat (ewure)        m  mosquito         a  agbero
  *   k  okada from right  K  okada from left     N  NEPA takes the light
  *   _  canoe platform    |  lift platform        f  raft (sinks while you stand on it)
+ *   b  mattress springboard   v  climbable scaffolding   D  manhole (warp, press down)
+ *   e  secret exit (skips the next stage)               Z  Fashe, the boss
+ *
+ * `warps` pairs up manhole columns; `swim` makes the water swimmable instead of deadly.
  *   @  start             C  bus-stop checkpoint (Danladi the conductor waits there)
  *   F  goal - the building named by the level's `goal`, with its `host` waiting there
  *
@@ -21,12 +25,18 @@
  */
 'use strict';
 
-function chunk(w, { gaps = [], water = false, put = [] } = {}) {
+// `deep` floods those column ranges from row 9 down, which is enough water to swim in
+// rather than the single row a normal gap leaves.
+function chunk(w, { gaps = [], water = false, deep = [], put = [] } = {}) {
   const rows = Array.from({ length: 14 }, () => Array(w).fill('.'));
   for (let x = 0; x < w; x++) {
-    const open = gaps.some(([a, b]) => x >= a && x <= b);
-    rows[12][x] = open ? '.' : '#';
-    rows[13][x] = open ? (water ? '~' : '.') : '#';
+    const flooded = deep.some(([a, b]) => x >= a && x <= b);
+    const open = flooded || gaps.some(([a, b]) => x >= a && x <= b);
+    if (flooded) for (let y = 9; y < 14; y++) rows[y][x] = '~';
+    else {
+      rows[12][x] = open ? '.' : '#';
+      rows[13][x] = open ? (water ? '~' : '.') : '#';
+    }
   }
   for (const [row, col, text] of put) {
     if (col + text.length > w) throw new Error(`Level chunk overflow at row ${row}, col ${col}: "${text}"`);
@@ -37,6 +47,8 @@ function chunk(w, { gaps = [], water = false, put = [] } = {}) {
   return rows.map((r) => r.join(''));
 }
 
+// A climbable run of scaffolding from `top` down to just above the ground.
+const ladder = (col, top, bottom = 11) => Array.from({ length: bottom - top + 1 }, (_, i) => [top + i, col, 'v']);
 const pillar = (col, top, bottom = 11) => Array.from({ length: bottom - top + 1 }, (_, i) => [top + i, col, 'PP']);
 const stairs = (col, heights) => heights.flatMap((h, i) => Array.from({ length: h }, (_, j) => [11 - j, col + i, 'X']));
 const joinChunks = (...chunks) => Array.from({ length: 14 }, (_, r) => chunks.map((c) => c[r]).join(''));
@@ -72,10 +84,12 @@ const LEVELS = [
       [147, 'generator'], [152, 'lamp'], [188, 'lamp'],
     ],
     npcs: [[30, 'okadaman'], [70, 'suya'], [92, 'kekeman'], [180, 'nurse']],
+    warps: [[60, 300]],
     map: joinChunks(
       chunk(40, { put: [[11, 2, '@'], [9, 6, 'ooo'], [8, 15, '?'], [8, 20, 'BUB?B'], [4, 22, '?'], [11, 26, 'r'], [11, 37, 'r']] }),
       chunk(40, {
-        put: [...pillar(5, 10), ...pillar(14, 9), ...pillar(26, 8), [5, 25, 'oooo'], [9, 17, 'ooo'], [11, 10, 'r'], [11, 20, 'r'], [11, 22, 'r'], [11, 34, 'a']],
+        put: [...pillar(5, 10), ...pillar(14, 9), ...pillar(26, 8), [5, 25, 'oooo'], [9, 17, 'ooo'],
+          [12, 20, 'D'], [11, 10, 'r'], [11, 30, 'r'], [11, 34, 'a']],
       }),
       chunk(40, {
         gaps: [[4, 5], [29, 30]],
@@ -95,7 +109,11 @@ const LEVELS = [
       }),
       chunk(56, {
         gaps: [[11, 13]],
-        put: [...stairs(3, [1, 2, 3, 4, 5, 5, 5, 5]), ...stairs(14, [4, 3, 2, 1]), [4, 8, 'ooo'], [11, 28, 'r'], [11, 38, 'F']],
+        put: [...stairs(3, [1, 2, 3, 4, 5, 5, 5, 5]), ...stairs(14, [4, 3, 2, 1]), [4, 8, 'ooo'], [11, 22, 'b'], [11, 28, 'r'], [11, 38, 'F']],
+      }),
+      // Down the manhole: a coin stash under the bridge, with a way back up.
+      chunk(40, {
+        put: [[12, 4, 'D'], [9, 8, 'oooooooo'], [7, 10, 'oooooo'], [5, 12, 'oooo'], [8, 26, 'M'], [11, 34, 'b']],
       }),
     ),
   },
@@ -126,7 +144,8 @@ const LEVELS = [
         put: [[10, 6, '======'], [8, 13, '======='], [6, 15, 'ooo'], [10, 20, '======'], [8, 32, 'B?BMB'], [11, 8, 'a'], [9, 22, 'm'], [11, 34, 'r']],
       }),
       chunk(40, {
-        put: [[8, 4, 'BBBBBBBBB'], [5, 10, 'h'], ...pillar(19, 8), [8, 27, 'oooo'], [10, 30, 'm'], [11, 14, 'g'], [11, 25, 'a'], [11, 33, 'C'], [11, 39, 'g']],
+        put: [[8, 4, 'BBBBBBBBB'], [5, 10, 'h'], ...pillar(19, 8), ...ladder(30, 5), [4, 28, 'XXXXX'], [3, 29, 'e'], [3, 33, 'ooo'],
+          [11, 14, 'g'], [11, 25, 'a'], [11, 37, 'C']],
       }),
       chunk(40, {
         gaps: [[8, 18]],
@@ -179,7 +198,7 @@ const LEVELS = [
         put: [...pillar(15, 9, 13), [12, 10, '|'], [12, 20, '|'], [4, 11, 'oo'], [4, 21, 'oo'], [11, 30, 'k']],
       }),
       chunk(40, {
-        put: [[11, 2, 'C'], [8, 5, 'B?B?B'], [9, 10, 'ooo'], [5, 26, 'M'], [8, 24, 'BBBBB'], [10, 14, 'm'], [10, 24, 'm'], [11, 21, 'a'], [11, 33, 'k']],
+        put: [[11, 2, 'C'], [8, 5, 'B?B?B'], [9, 10, 'ooo'], [11, 16, 'b'], [5, 26, 'M'], [8, 24, 'BBBBB'], [10, 14, 'm'], [10, 24, 'm'], [11, 21, 'a'], [11, 33, 'k']],
       }),
       chunk(40, {
         // Two shorter canoe rides either side of the pillar island: the nine- and
@@ -196,7 +215,7 @@ const LEVELS = [
     ),
   },
   {
-    id: '1-4',
+    id: '2-1',
     name: 'OJUELEGBA AT NIGHT',
     theme: 'night',
     photo: 'bg_ojuelegba',
@@ -233,7 +252,7 @@ const LEVELS = [
         put: [...pillar(6, 8), [9, 22, '====='], [7, 23, 'ooo'], [11, 12, 'r'], [11, 30, 'a']],
       }),
       chunk(40, {
-        put: [[8, 8, 'BB?BB'], [5, 10, 'M'], [9, 24, 'ooo'], [10, 18, 'm'], [11, 4, 'r'], [11, 32, 'a']],
+        put: [[8, 8, 'BB?BB'], [5, 10, 'M'], [9, 24, 'ooo'], [10, 18, 'm'], [11, 4, 'r'], [11, 28, 'b'], [11, 32, 'a']],
       }),
       chunk(56, {
         gaps: [[16, 18]],
@@ -242,12 +261,13 @@ const LEVELS = [
     ),
   },
   {
-    id: '1-5',
+    id: '2-2',
     name: 'MAKOKO WATERSIDE',
     theme: 'makoko',
     photo: 'bg_makoko',
     song: 'makoko',
     ambience: 'bridge',
+    swim: true,
     time: 420,
     story: 'BABA RISI SAY FASHE BOYS DEY SELL THE CLOTH FOR MAKOKO, FOR TOP WATER. NA CANOE GO CARRY YOU.',
     tip: 'THE RAFT DEY SINK WHEN YOU STAND FOR AM. NO WAIT LONG - JUMP BEFORE E GO UNDER!',
@@ -268,9 +288,9 @@ const LEVELS = [
         put: [[12, 9, '_'], [12, 21, '_'], [7, 10, 'ooo'], [7, 22, 'ooo'], [10, 17, 'm'], [11, 32, 'r']],
       }),
       chunk(40, {
-        gaps: [[10, 16]],
+        deep: [[8, 20]],
         water: true,
-        put: [[12, 11, 'f'], [8, 22, 'B?B'], [9, 30, 'ooo'], [10, 26, 'm'], [11, 35, 'a']],
+        put: [[8, 10, 'ooo'], [10, 14, 'ooo'], [8, 26, 'B?B'], [9, 31, 'ooo'], [11, 35, 'a']],
       }),
       chunk(40, {
         gaps: [[6, 12], [18, 24], [30, 34]],
@@ -288,12 +308,12 @@ const LEVELS = [
       chunk(56, {
         gaps: [[8, 14]],
         water: true,
-        put: [[12, 9, '_'], [8, 20, '?M?'], [9, 26, 'ooo'], [10, 32, 'm'], [11, 36, 'r'], [11, 44, 'F']],
+        put: [[12, 9, '_'], [8, 20, '?M?'], [9, 26, 'ooo'], [11, 32, 'Z'], [11, 44, 'F']],
       }),
     ),
   },
   {
-    id: '1-6',
+    id: '2-3',
     name: 'LAGOS ISLAND GO-SLOW',
     theme: 'island',
     photo: 'bg_island',

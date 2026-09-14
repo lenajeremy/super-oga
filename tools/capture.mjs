@@ -224,6 +224,7 @@ for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
     const wall = w.solidAt(front, p.bottom - 4) || w.solidAt(front, p.y + 2);
     const foe = w.entities.some((e) => e instanceof scope.api.Enemy && e.alive && e.x + e.w > p.x && e.x - (p.x + p.w) < 46 && Math.abs(e.bottom - p.bottom) < 30);
     const overWater = (x) => w.tileAt(Math.floor(x / 16), Math.floor((p.bottom + 20) / 16)) === '~';
+    if (p.swimming) { press('ArrowRight', ...(f % 14 < 3 ? ['Space'] : [])); tick(1); continue; }
     if (p.onGround && !p.ride && overWater(front + 16)) {
       // Short water is simply jumped; only a real stretch is worth a boat. And a canoe
       // drifts over to you, whereas a lift never will - so jump to a lift when it is low.
@@ -236,7 +237,12 @@ for (let f = 0; f < 180000 && Game.state !== 'victory'; f++) {
         const ready = boat && (ferry
           ? boat.x - (p.x + p.w) < 26 && boat.y - p.bottom > -40
           : gapTo < 150 && boat.y - p.bottom > -70 && boat.y - p.bottom < 30);
-        if (!ready) { press(); tick(1); continue; }
+        if (!ready) {
+          if (w.def.swim) press('ArrowRight', ...(f % 16 < 2 ? ['Space'] : []));
+          else press();
+          tick(1);
+          continue;
+        }
       }
     }
     // Riding a canoe or lift: look right for the next foothold - solid ground or another

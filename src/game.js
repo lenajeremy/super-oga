@@ -22,6 +22,7 @@ const Game = {
   // this changing hands, and pieces spill every time he takes a hit.
   aso: false,
   asoPieces: 0,
+  coinsFound: 0,
   // How the agberos on this road feel about him: settle with them and word spreads.
   reputation: 0,
   time: 0,
@@ -30,6 +31,7 @@ const Game = {
   hurry: false,
   fromCheckpoint: false,
   clearStep: 0,
+  advance: 1,
   storyIndex: 0,
   storyChars: 0,
   world: null,
@@ -137,7 +139,7 @@ const Game = {
     } else if (this.stateTime > 20 && Input.confirm()) {
       Sound.unlock();
       Sound.play('select');
-      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, aso: false, asoPieces: 0, reputation: 0, form: 'small', storyIndex: 0, storyChars: 0 });
+      Object.assign(this, { levelIndex: 0, lives: STARTING_LIVES, score: 0, naira: 100, aso: false, asoPieces: 0, coinsFound: 0, reputation: 0, form: 'small', storyIndex: 0, storyChars: 0 });
       this.setState('story');
     }
   },
@@ -237,17 +239,20 @@ const Game = {
     this.say(DEATH_LINES[cause] || DEATH_LINES.hit, '#e3412f');
   },
 
-  levelClear() {
+  levelClear(height = 0, advance = 1) {
     const player = this.world.player;
     if (player.vehicle) player.dismount();
     Object.assign(player, { state: 'win', invuln: 0, odogwu: 0 });
     this.form = player.form;
     this.clearStep = 0;
+    this.advance = advance;
     Sound.stopMusic();
     Sound.stopAmbience();
     Sound.duckMusic(false);
     Sound.play('clear');
-    this.say(pick(['YOU DON REACH OWAMBE! CHOP LIFE!', 'E CHOKE! OWAMBE DON START!', 'OSHEY! STAGE DON CLEAR!']), '#63d68f');
+    this.say(height > 0.75
+      ? 'TOP OF THE POLE! OSHEY BABA!'
+      : pick(['YOU DON REACH! CHOP LIFE!', 'E CHOKE! STAGE DON CLEAR!', 'OSHEY! ONE DOWN!']), '#63d68f');
     this.setState('clear');
   },
 
@@ -285,7 +290,7 @@ const Game = {
         Sound.play('victory');
         this.setState('victory');
       } else {
-        this.levelIndex++;
+        this.levelIndex = Math.min(LEVELS.length - 1, this.levelIndex + (this.advance || 1));
         this.startLevel(false);
       }
     }
@@ -314,6 +319,8 @@ const Game = {
     this.naira += NAIRA_PER_COIN;
     this.score += 50;
     Sound.play('coin');
+    // A hundred coins is a life, counted on what you pick up, not what you still hold.
+    if (++this.coinsFound % 100 === 0) this.addLife();
   },
 
   spend(amount) {
@@ -486,7 +493,7 @@ const Game = {
 
   drawIntro(ctx) {
     const level = LEVELS[this.levelIndex];
-    drawText(ctx, `STAGE ${level.id}`, VIEW_W / 2, 24, { align: 'center', scale: 3, color: '#ffcd3a' });
+    drawText(ctx, `WORLD ${level.id}`, VIEW_W / 2, 24, { align: 'center', scale: 3, color: '#ffcd3a' });
     drawText(ctx, level.name, VIEW_W / 2, 56, { align: 'center', scale: 2 });
     Assets.draw(ctx, 'hero', 'icon_head', VIEW_W / 2 - 40, 80);
     drawText(ctx, `× ${this.lives}`, VIEW_W / 2 - 20, 83);
@@ -504,7 +511,7 @@ const Game = {
     drawText(ctx, String(this.score).padStart(7, '0'), 8, 13);
     Assets.draw(ctx, 'items', 'coin1', 100, 5);
     drawText(ctx, `₦${this.naira}`, 116, 9, { color: '#ffcd3a' });
-    drawText(ctx, 'STAGE', 196, 4, { align: 'center' });
+    drawText(ctx, 'WORLD', 196, 4, { align: 'center' });
     drawText(ctx, LEVELS[this.levelIndex].id, 196, 13, { align: 'center' });
     Assets.draw(ctx, 'hero', 'icon_head', 236, 6);
     drawText(ctx, `×${this.lives}`, 254, 9);

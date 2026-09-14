@@ -342,6 +342,18 @@ const Sound = {
         T(110, { type: 'sawtooth', dur: 0.5, vol: 0.07, slide: 230 });
         N({ dur: 0.5, vol: 0.05, filter: 'bandpass', freq: 900, q: 0.8, slide: 3000 });
         break;
+      case 'stroke':
+        N({ dur: 0.2, vol: 0.12, filter: 'lowpass', freq: 1400, slide: 380 });
+        T(300, { type: 'sine', dur: 0.14, vol: 0.06, slide: 520 });
+        break;
+      case 'warp':
+        T(900, { type: 'square', dur: 0.4, vol: 0.12, slide: 150 });
+        N({ dur: 0.45, vol: 0.07, filter: 'lowpass', freq: 2400, slide: 260 });
+        break;
+      case 'spring':
+        T(320, { type: 'triangle', dur: 0.18, vol: 0.16, slide: 1100 });
+        N({ dur: 0.1, vol: 0.06, filter: 'bandpass', freq: 1400, q: 1.2 });
+        break;
       case 'goat': T(330, { type: 'sawtooth', dur: 0.45, vol: 0.07, vibrato: 25, slide: 290 }); break;
       case 'steal': T(700, { dur: 0.1, vol: 0.12, slide: 350 }); T(350, { dur: 0.18, vol: 0.12, delay: 0.1, slide: 175 }); break;
       case 'checkpoint': arp([523, 784, 1047], 'triangle', 0.09, 0.16, 0.12); break;
