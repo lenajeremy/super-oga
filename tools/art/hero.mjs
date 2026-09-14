@@ -38,6 +38,17 @@ const S_BODY = [
   '..KgGGGGGGGGGgK.',
   '..KgggggggggggK.',
 ];
+// Punching: the agbada sleeve pulls back and the fist drives out past it.
+const S_BODY_PUNCH = [
+  '....KKGYYYGKK...',
+  '...KGGGYWYGGGK..',
+  '..KGGGGGYGGGGGK.',
+  '.KKgGGGGYGGGGgKK',
+  'KSSgGGGGGGGGgSSK',
+  'KKKgGGGGGGGGgKKK',
+  '..KgGGGGGGGGgK..',
+  '..KggggggggggK..',
+];
 const S_BODY_JUMP = [
   '....KKGYYYGKK...',
   'KK.KGGGYWYGGGK.K',
@@ -54,6 +65,7 @@ const S_LEGS = {
   pass: ['....KWWKWWK.....', '.....KWwWK......', '.....KDDDDK.....', '.....KKKKKK.....'],
   jump: ['...KWWKKWWWK....', '..KWwK..KWwK....', '..KDDK...KDDDK..', '..KKK.....KKKK..'],
   skid: ['.....KWWK.KWWK..', '....KWwK...KWwK.', '...KDDDK...KDDDK', '...KKKKK...KKKKK'],
+  brace: ['...KWWK..KWWK...', '..KWwK....KWwK..', '.KDDDK....KDDDDK', '.KKKKK....KKKKKK'],
 };
 const S_DEAD = [
   '................',
@@ -141,6 +153,19 @@ const B_BODY_THROW = [
   '...KgGGGGGGGGGGGGGGgK...',
   '...KggggggggggggggggK...',
 ];
+const B_BODY_PUNCH = [
+  '.......KKGYYYYYGKK......',
+  '.....KKGGGYWWWYGGGKK....',
+  '...KKGGGGGGYWYGGGGGGKK..',
+  '..KGGGGGGGYYGYYGGGGGGGK.',
+  '.KGgGGGGGGGYYYGGGGGGGgK.',
+  'KSSgGGGGGGGGYGGGGGGGgSSK',
+  'KKKgGGGGGGGGGGGGGGGGgKKK',
+  '..KgGGGGGGGGGGGGGGGGgK..',
+  '..KgGGGGGGGGGGGGGGGGgK..',
+  '...KgGGGGGGGGGGGGGGgK...',
+  '...KggggggggggggggggK...',
+];
 const B_CROUCH_BODY = [
   '..KKGGGGGGYYYGGGGGGGKK..',
   '.KGGgGGGGGGYGGGGGGGgGGK.',
@@ -155,6 +180,7 @@ const B_LEGS = {
   pass: ['.........KWWWWK.........', '.........KWwWWK.........', '.........KDDDDDK........', '.........KKKKKKK........'],
   jump: ['......KWWWKKWWWWK.......', '.....KWwWK..KWwWK.......', '.....KDDDK...KDDDDK.....', '.....KKKK.....KKKKK.....'],
   skid: ['........KWWWK.KWWWK.....', '.......KWwWK...KWwWK....', '......KDDDDK...KDDDDK...', '......KKKKKK...KKKKKK...'],
+  brace: ['......KWWWK..KWWWK......', '.....KWwWK....KWwWK.....', '....KDDDDK....KDDDDDK...', '....KKKKKK....KKKKKKK...'],
 };
 
 // Seated on a ride: arms forward on the handlebar, knees up.
@@ -200,6 +226,7 @@ export function heroFrames() {
     jump: compose(16, 24, [{ rows: S_HEAD }, { rows: S_BODY_JUMP, y: 12 }, { rows: S_LEGS.jump, y: 20 }]),
     skid: compose(16, 24, [{ rows: S_HEAD }, { rows: S_BODY, y: 12 }, { rows: S_LEGS.skid, y: 20 }]),
     dead: compose(16, 24, [{ rows: S_DEAD }]),
+    punch: compose(16, 24, [{ rows: S_HEAD }, { rows: S_BODY_PUNCH, y: 12 }, { rows: S_LEGS.brace, y: 20 }]),
     sit: compose(16, 20, [{ rows: S_HEAD }, { rows: S_SIT_BODY, y: 12 }]),
   };
   const big = {
@@ -216,6 +243,7 @@ export function heroFrames() {
     crouch: compose(24, 32, [{ rows: B_HEAD, y: 9 }, { rows: B_CROUCH_BODY, y: 26 }]),
     throw: compose(24, 32, [{ rows: B_HEAD }, { rows: B_BODY_THROW, y: 17 }, { rows: B_LEGS.step, y: 28 }]),
     sit: compose(24, 26, [{ rows: B_HEAD }, { rows: B_SIT_BODY, y: 17 }]),
+    punch: compose(24, 32, [{ rows: B_HEAD }, { rows: B_BODY_PUNCH, y: 17 }, { rows: B_LEGS.brace, y: 28 }]),
   };
 
   const frames = {};

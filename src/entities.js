@@ -194,7 +194,8 @@ class Player extends Entity {
       w: 18,
       h: this.h * 0.5,
     };
-    this.world.particles.push(new Particle(reach.x + (this.facing > 0 ? 6 : 0), reach.y + 2, { life: 10, frames: ['sparkle1', 'sparkle2'], rate: 5 }));
+    // A little lunge, so the jab has weight behind it.
+    if (this.onGround) this.world.moveX(this, this.facing * 2);
     let landed = false;
     for (const e of this.world.entities) {
       if (e.dead || !(e instanceof Enemy) || !e.alive || !overlaps(reach, e)) continue;
@@ -202,7 +203,13 @@ class Player extends Entity {
       if (e.punched) e.punched(this);
       else e.knockOut('GBOSA!');
     }
-    if (landed) this.world.shake = 3;
+    // The burst goes where the fist is: a hard crack on contact, a puff of air on a miss.
+    const fistX = this.facing > 0 ? this.x + this.w + 1 : this.x - 15;
+    const fistY = this.y + this.h * 0.32;
+    this.world.particles.push(landed
+      ? new Particle(fistX, fistY, { life: 12, frames: ['impact1', 'impact2'], rate: 6 })
+      : new Particle(fistX + 3, fistY + 3, { vx: this.facing * 0.6, life: 9, frames: ['dust1', 'dust2'], rate: 5 }));
+    this.world.shake = landed ? 4 : 0;
   }
 
   hurt() {
@@ -521,7 +528,7 @@ class Player extends Entity {
     else if (this.crouching) pose = 'crouch';
     else if (!this.onGround) pose = 'jump';
     else if (this.skidding) pose = 'skid';
-    else if (this.punchTimer > 6) pose = this.big ? 'throw' : 'walk2';
+    else if (this.punchTimer > 4) pose = 'punch';
     else if (this.throwTimer > 0 && this.big) pose = 'throw';
     else if (Math.abs(this.vx) > 0.15) pose = Math.floor(this.anim) % 2 ? 'walk2' : 'walk1';
     const name = pose === 'dead' ? 's_dead' : `${this.big ? 'b' : 's'}_${pose}${variant}`;

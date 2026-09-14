@@ -128,6 +128,25 @@ function asoPiece() {
   return p.outline('K');
 }
 
+// The crack where a punch lands: a hard little starburst, then a ring as it fades.
+function impact(frame) {
+  const p = new Pix(14, 14);
+  if (frame === 0) {
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      for (let r = 2; r <= 6; r++) p.set(7 + dx * r, 7 + dy * r, r > 4 ? 'Y' : 'W');
+    }
+    p.disc(7, 7, 2, 'W');
+    p.disc(7, 7, 1, 'A');
+  } else {
+    for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      p.set(7 + dx * 5, 7 + dy * 5, 'Y');
+      p.set(7 + dx * 6, 7 + dy * 6, 'y');
+    }
+    p.disc(7, 7, 1, 'Y');
+  }
+  return p;
+}
+
 function star() {
   return new Pix(5, 5).set(2, 0, 'Y').rect(0, 2, 5, 1, 'Y').rect(1, 1, 3, 3, 'Y').set(1, 4, 'Y').set(3, 4, 'Y').set(2, 2, 'W');
 }
@@ -156,5 +175,7 @@ export function itemFrames() {
     warn: warn(),
     star: star(),
     aso: asoPiece(),
+    impact1: impact(0),
+    impact2: impact(1),
   };
 }
